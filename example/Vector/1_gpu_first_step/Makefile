@@ -12,7 +12,7 @@ gpu_fstep:
 	$(CC) $(OPT) -c -o $@ $< $(INCLUDE_PATH)
 
 gpu_fstep: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS_PATH) $(LIBS_SELECT)
+	$(CUDA_CC_LINK) -o $@ $^ $(CFLAGS) $(LIBS_PATH) $(LIBS_SELECT)
 
 all: gpu_fstep
 

@@ -1,10 +1,10 @@
 # - Try to find LibHilbert
 # Once done this will define
 #
-#  TINYOBJLOADER_FOUND        - system has LibHilbert
-#  TINYOBJLOADER_INCLUDE_DIRS - include directories for PETSc
-#  TINYOBJLOADER_LIBRARY_DIRS - library directories for PETSc
-#  TINYOBJLOADER_LIBRARIES    - libraries for PETSc
+#  TINYOBJLOADER_FOUND        - system has TinyObjLoader
+#  TINYOBJLOADER_INCLUDE_DIRS - include directories for TinyObjLoader
+#  TINYOBJLOADER_LIBRARY_DIRS - library directories for TinyObjLoader
+#  TINYOBJLOADER_LIBRARIES    - libraries for TinyObjLoader
 #
 #=============================================================================
 # Copyright (C) 2010-2016 Pietro Incardona

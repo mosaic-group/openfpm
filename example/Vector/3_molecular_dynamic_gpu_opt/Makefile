@@ -17,7 +17,7 @@ md_dyn_gpu_test: all
 	$(CC) $(OPT) -c -o $@ $< $(INCLUDE_PATH)
 
 md_dyn_gpu: $(OBJ_GPU)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS_PATH) $(LIBS)
+	$(CUDA_CC_LINK) -o $@ $^ $(CFLAGS) $(LIBS_PATH) $(LIBS)
 
 md_dyn_cpu: $(OBJ_CPU)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS_PATH) $(LIBS)

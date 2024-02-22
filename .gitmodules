@@ -1,3 +1,6 @@
+[submodule "openfpm_pdata"]
+	path = openfpm_pdata
+	url = ../openfpm_pdata.git
 [submodule "openfpm_vcluster"]
 	path = openfpm_vcluster
 	url = ../openfpm_vcluster.git

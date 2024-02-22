@@ -12,6 +12,7 @@ scan_coverty=OFF
 
 # NONE, CUDA, SEQUENTIAL, OpenMP, HIP
 cuda_on_backend=NONE
+enable_numerics=ON
 test_performance=OFF
 enable_asan=OFF
 enable_garbage_injector=OFF
@@ -31,6 +32,7 @@ configure_options="$configure_options -DTEST_COVERAGE=$test_coverage "
 configure_options="$configure_options -DSCAN_COVERTY=$scan_coverty "
 configure_options="$configure_options -DTEST_PERFORMANCE=$test_performance "
 configure_options="$configure_options -DENABLE_ASAN=$enable_asan "
+configure_options="$configure_options -DENABLE_NUMERICS=$enable_numerics "
 configure_options="$configure_options -DENABLE_GARBAGE_INJECTOR=$enable_garbage_injector "
 configure_options="$configure_options -DENABLE_VCLUSTER_GARBAGE_INJECTOR=$enable_vcluster_garbage_injector "
 
