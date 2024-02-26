@@ -18,7 +18,7 @@ else
         CUDA_CC=mpic++ -x c++
         INCLUDE_PATH_NVCC=$(INCLUDE_PATH)
         CUDA_CC_LINK=mpic++
-        CUDA_OPTIONS=-O3 --std=c++14 -DTEST_RUN -D__NVCC__ -DCUDART_VERSION=11000
+        CUDA_OPTIONS=-O3 --std=c++14 -DTEST_RUN
         LIBS_SELECT=$(LIBS) -lboost_context
     else
         ifeq (, $(shell which nvcc))

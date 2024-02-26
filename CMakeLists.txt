@@ -155,10 +155,6 @@ endif()
 
 add_subdirectory(openfpm_pdata)
 
-if (ENABLE_NUMERICS)
-	add_subdirectory(openfpm_numerics)
-endif()
-
 # WRITE BUILD OPTIONS TO CONFIG FILES. LATER USED TO CREATE example.mk
 if (OPENMP_FOUND)
 	if (NOT OpenMP_CXX_INCLUDE_DIRS STREQUAL "")
