@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # None Debug Release RelWithDebInfo
-build_type=DEBUG
+build_type=Release
 
 se_class1=OFF
 se_class2=OFF
