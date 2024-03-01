@@ -14,11 +14,10 @@ if [ x"$CXX" == x"icpc" ]; then
 elif [ x"$CXX" == x"clang++" ]; then
 	TOOLSET="clang"
 else
-	if [ x"$CXX" == x"g++*" ]; then
-		if [ x"$is_apple_llvm" == x"yes" ]; then
+	if [[ x"$CXX" == x"g++"* ]]; then
+		g++ --version | grep "Apple LLVM\|Apple clang" >/dev/null 2>&1
+		if [ $? == 0 ]; then
 			TOOLSET="clang"
-		else
-			TOOLSET="gcc"
 		fi
 	else
 		TOOLSET="gcc"
@@ -27,8 +26,8 @@ fi
 
 mkdir $1/BOOST
 # Several flavours
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    if [ x"$arch" == x"arm64" ]; then
+if [[ x"$OSTYPE" == x"darwin"* ]]; then
+    if [ x$(uname -m) == x"arm64" ]; then
         if [ x"$TOOLSET" == x"" ]; then
             ./b2 -a -j $2 install --prefix=$1/BOOST address-model=64 architecture=arm abi=aapcs binary-format=mach-o toolset=clang  -sNO_LZMA=1 -sNO_ZSTD=1
         else
