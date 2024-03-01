@@ -1,6 +1,31 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## OpenFPM 5.0.0 - Feb 2024
+- Move to `openfpm` meta OpenFPM project structure with git subprojects `openfpm_data`, `openfpm_devices`, `openfpm_io`, `openfpm_vcluster`, `openfpm_pdata`, `openfpm_numerics`. Example codes, installation scripts for dependencies, configuration scripts moved to `openfpm`. Only source code of `openfpm_pdata` kept in `openfpm_pdata`
+
+### Added
+- Add DC-PSE gpu implementation
+- Add support for _minter_ header-only library. Installed automatically if `openfpm_numerics` is enabled
+- Add _Odeint_ gpu support
+
+### Fixed
+- Fix `remove_marked` when number of particles is decreased and memory is reused
+- Fix `host_to_device_impl` when _allocated_ size > _actual_ size 
+- Fix DC-PSE operator with Lagrange multiplier for number of variables > 1
+- Fix template substitution failure for `Graph_CSR` with no edge
+- Fix Cell List `getNNIterator` giving different neighborhood lists for dense and sparse versions
+- Fix `sendrecvMultipleMessagesNBX` for message size > 2 GB
+
+### Changes
+- Get rid of _autotools_ emulation for installation procedure. Remove `install/update/upgrade` scripts. Move to _CMake_ with manually building dependencies and manualy calling configuration scripts for _CMake_, `example.mk`, `openfpm_vars`
+- Remove `gdbui` from list of git subprojects
+- Move from _moderngpu_ as it's no longer supported to _cub_
+- Refactor Cell List implementation, change code structure and variable naming. Split dense and sparse Cell List into partial template specializations
+- Move all backends for CUDA emulation, CUDA headers and parallel primitives to `openfpm_devices` from `openfpm_data` 
+- Remove default parameter from `NO_CHECK` from Cell List iterators (e.g. `getNNIterator`). `cl.template getNNIterator<NO_CHECK>(...)` is replaced by `cl.getNNIterator(...)`
+- Pass Cell List `NNIteratorBox` parameter to `getCellList/getCellListGPU` of `vector_dist`. `getNNIteratorBox` has to be set when initializing the Cell List compared to `getNNIteratorRadius`, which could be set later, due to sparse Cell List on gpu using it in `construct()`. If not set, the dafault value of 1 would have been used by `construct()`
+
 ## [4.1.0] (Codename Thesis)
 - On a general base the code should not use CUDA_ON_CPU but if it does CUDA_ON_CPU macro now cover both SEQUENTIAL and OpenMP backend. The macros CUDIFY_USE_CUDA,CUDIFY_USE_HIP,CUDIFY_USE_OPENMP,CUDIFY_USE_SEQUENTIAL,CUDIFY_USE_NONE can be checked to control which CUDA backend is used
 
