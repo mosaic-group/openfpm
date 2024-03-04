@@ -1,6 +1,6 @@
 #! /bin/bash
 
-wget http://ppmcore.mpi-cbg.de/upload/eigen-3.4.0.tar.bz2
+wget http://ppmcore.mpi-cbg.de/upload/eigen-3.4.0.tar.bz2 -O eigen-3.4.0.tar.bz2
 tar -xf eigen-3.4.0.tar.bz2
 
 cd eigen-3.4.0/

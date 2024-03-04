@@ -1,6 +1,6 @@
 #! /bin/bash
 
-wget http://ppmcore.mpi-cbg.de/upload/OpenBLAS-0.3.26.tar.gz
+wget http://ppmcore.mpi-cbg.de/upload/OpenBLAS-0.3.26.tar.gz -O OpenBLAS-0.3.26.tar.gz
 tar -xf OpenBLAS-0.3.26.tar.gz
 cd OpenBLAS-0.3.26
 

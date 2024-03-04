@@ -27,7 +27,7 @@ make install
 
 if [[ "$OSTYPE" == "cygwin" ]]; then
   cd $1/PARMETIS/include
-  wget http://openfpm.mpi-cbg.de/upload/parmetis_patch
+  wget http://openfpm.mpi-cbg.de/upload/parmetis_patch -O parmetis_patch
   patch < parmetis_patch
 fi
 
