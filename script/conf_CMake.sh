@@ -52,7 +52,7 @@ fi
 
 if [ -d "$prefix_dependencies/MPI" ]; then
     configure_options="$configure_options -DMPI_VENDOR=openmpi "
-    configure_options="$configure_options -DMPI_ROOT=$prefix_dependencies/PETSC "
+    configure_options="$configure_options -DMPI_ROOT=$prefix_dependencies/MPI "
 fi
 
 if [ -d "$prefix_dependencies/PETSC" ]; then
