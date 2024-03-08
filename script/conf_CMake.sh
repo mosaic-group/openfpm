@@ -1,22 +1,78 @@
 #! /bin/bash
 
 # None Debug Release RelWithDebInfo
-build_type=Release
+if [[ -v BUILD_TYPE ]]; then
+    build_type="$BUILD_TYPE"
+else
+    build_type=Release
+fi
 
-se_class1=OFF
-se_class2=OFF
-se_class3=OFF
+if [[ -v SE_CLASS1 ]]; then
+    se_class1="$SE_CLASS1"
+else
+    se_class1=OFF
+fi
 
-test_coverage=OFF
-scan_coverty=OFF
+if [[ -v SE_CLASS2 ]]; then
+    se_class2="$SE_CLASS2"
+else
+    se_class2=OFF
+fi
+
+if [[ -v SE_CLASS3 ]]; then
+    se_class3="$SE_CLASS3"
+else
+    se_class3=OFF
+fi
+
+if [[ -v TEST_COVERAGE ]]; then
+    test_coverage="$TEST_COVERAGE"
+else
+    test_coverage=OFF
+fi
+
+if [[ -v SCAN_COVERTY ]]; then
+    scan_coverty="$SCAN_COVERTY"
+else
+    scan_coverty=OFF
+fi
 
 # NONE, CUDA, SEQUENTIAL, OpenMP, HIP
-cuda_on_backend=NONE
-enable_numerics=ON
-test_performance=OFF
-enable_asan=OFF
-enable_garbage_injector=OFF
-enable_vcluster_garbage_injector=OFF
+if [[ -v CUDA_ON_BACKEND ]]; then
+    cuda_on_backend="$CUDA_ON_BACKEND"
+else
+    cuda_on_backend=NONE
+fi
+
+if [[ -v ENABLE_NUMERICS ]]; then
+    enable_numerics="$ENABLE_NUMERICS"
+else
+    enable_numerics=ON
+fi
+
+if [[ -v TEST_PERFORMANCE ]]; then
+    test_performance="$TEST_PERFORMANCE"
+else
+    test_performance=OFF
+fi
+
+if [[ -v ENABLE_ASAN ]]; then
+    enable_asan="$ENABLE_ASAN"
+else
+    enable_asan=OFF
+fi
+
+if [[ -v ENABLE_GARBAGE_INJECTOR ]]; then
+    enable_garbage_injector="$ENABLE_GARBAGE_INJECTOR"
+else
+    enable_garbage_injector=OFF
+fi
+
+if [[ -v ENABLE_VCLUSTER_GARBAGE_INJECTOR ]]; then
+    enable_vcluster_garbage_injector="$ENABLE_VCLUSTER_GARBAGE_INJECTOR"
+else
+    enable_vcluster_garbage_injector=OFF
+fi
 
 # -----------
 
