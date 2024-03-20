@@ -21,7 +21,7 @@ We support MacOS, Linux and Windows subsystem for Linux.
 
 To install please refer to the website instructions on [how to build from source](http://openfpm.mpi-cbg.de/building/)
 
-# Examples and documentation
+## Examples and documentation
 
 Examples and documentation are available on the [website](http://openfpm.mpi-cbg.de/news/), in the [online Doxygen documentation](http://ppmcore.mpi-cbg.de/doxygen/openfpm/index.html) and under the folder `example`. 
 
