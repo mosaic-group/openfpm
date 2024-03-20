@@ -1,4 +1,4 @@
-# OpenFPM: A scalable open framework for particle and particle-mesh codes on parallel computers
+## OpenFPM: A scalable open-source framework for particle and particle-mesh codes on parallel computers
 ![OpenFPM.png](OpenFPM.png)
 
 OpenFPM is an open-source software library that facilitates implementing scalable particle and hybrid particle-mesh simulation codes on heterogeneous shared-memory and distributed-memory parallel computer systems.
