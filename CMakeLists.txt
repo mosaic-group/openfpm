@@ -153,7 +153,17 @@ else()
 	message( FATAL_ERROR "BOOST is required in order to install OpenFPM" )
 endif()
 
+add_subdirectory(openfpm_devices)
+add_subdirectory(openfpm_data)
+add_subdirectory(openfpm_vcluster)
+add_subdirectory(openfpm_io)
 add_subdirectory(openfpm_pdata)
+
+if (ENABLE_NUMERICS)
+	add_subdirectory(openfpm_numerics)
+endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config_cmake.h.in ${PROJECT_BINARY_DIR}/config/config.h)
 
 # WRITE BUILD OPTIONS TO CONFIG FILES. LATER USED TO CREATE example.mk
 if (OPENMP_FOUND)
