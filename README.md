@@ -1,26 +1,36 @@
-# Open Framework for Particle and Mesh Codes (OpenFPM)
+# OpenFPM: A scalable open framework for particle and particle-mesh codes on parallel computers
 ![OpenFPM.png](OpenFPM.png)
 
-OpenFPM is a scalable and open C++ framework for particles and mesh simulations.
+OpenFPM is an open-source software library that facilitates implementing scalable particle and hybrid particle-mesh simulation codes on heterogeneous shared-memory and distributed-memory parallel computer systems.
 
-You can build scalable Molecular Dynamics, Smooth Particle Hydrodynamics, Granular flows, Finite differences, Hybrid Particle-Mesh codes on CPUs and GPUs.
+The library features:
 
-We provide examples for each case in the documentation.
-
-If you use OpenFPM please cite these papers
-https://www.sciencedirect.com/science/article/pii/S0010465519300852?via%3Dihub
-https://link.springer.com/article/10.1140/epje/s10189-021-00121-x#citeas
+* Scalable serial and parallel data structures for heterogeneous computing systems available CPU and GPU-accelerated hardware
+* Operators for particle methods linear differential discretization, e.g. DC-PSE, SPH
+* Particle-mesh and mesh-particle interpolation schemes
+* Data structures for efficient particle methods simulations, e.g. Cell-List, Verlet-List
+* Sparse grid on CPU and GPU
+* Support for [PETSc](https://petsc.org/), [Eigen](https://eigen.tuxfamily.org/index.php) linear algebra backends
+* Support for ODE integration operators with [Boost.Numeric.Odeint](https://www.boost.org/doc/libs/1_82_0/libs/numeric/odeint/doc/html/index.html)
+* Level-set formulation with [Algoim](https://algoim.github.io)
+* GPU execution backends include [CUDA](https://developer.nvidia.com/cuda-toolkit), [HIP](https://rocm.docs.amd.com/projects/HIP/en/latest/), [OpenMP](https://www.openmp.org/), [alpaka](https://alpaka.readthedocs.io/en/latest/)
+* ... and many others
 
 ## Installation
 We support MacOS, Linux and Windows subsystem for Linux.
 
-To install, run the install script with ./install and follow the instructions.
+To install please refer to the website instructions on [how to build from source](http://openfpm.mpi-cbg.de/building/)
 
-# Example and documentation
+# Examples and documentation
 
-Examples and documentation is available at : http://ppmcore.mpi-cbg.de/doxygen/openfpm/index.html
+Examples and documentation are available on the [website](http://openfpm.mpi-cbg.de/news/), in the [online Doxygen documentation](http://ppmcore.mpi-cbg.de/doxygen/openfpm/index.html) and under the folder `example`. 
 
-3D Active Fluid Simulation with OpenFPM:
-![3DActiveFluid.png](activefluid.png)
+Example codes include codes for discrete item-based (e.g. Lennard-Jones molecular dynamics) and continuous time and/or space simulations (e.g. Reaction-diffusion-advection equations):
 
+* Dam-break simulation of weakly compressible Navier-Stokes equations in SPH formulation
+* Diffusive heat conduction using sparse-grid level set formulation
+* 3D Active Fluid simulation
+* Gray-Scott reaction-system in 3D
+* Hybrid particle-mesh Vortex Method to solve incompressible Navier-Stokes equations
+* ... and others
 
