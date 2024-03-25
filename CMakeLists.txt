@@ -129,6 +129,9 @@ if(APPLE)
 endif()
 
 if (Boost_FOUND)
+	# ignore BOOST deprecated headers
+	add_definitions("-DBOOST_ALLOW_DEPRECATED_HEADERS")
+
 	if ((CUDA_ON_BACKEND STREQUAL "SEQUENTIAL" OR CUDA_ON_BACKEND STREQUAL "OpenMP") AND NOT Boost_CONTEXT_FOUND)
 		message( FATAL_ERROR "BOOST is invalid reinstalling" )
 	endif()
