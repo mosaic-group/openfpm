@@ -5,66 +5,68 @@ on:
   push:
     branches:
       - master
+      - develop
       - fix/github-action
+      - feat/new_dcpse
   release:
 
 jobs:
-  build_almalinux:
-    runs-on: ubuntu-latest
-    container: almalinux:8.5
-    steps:
-      - name: Install dependencies
-        run: |
-          dnf -y --refresh update
-          yum install -y openssh-clients cmake wget git gcc-c++ gcc-gfortran python39 bzip2 diffutils zlib-devel rpm-build
-          ln -s /usr/bin/python3 /usr/bin/python
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Restore Cache dependencies
-        uses: actions/cache/restore@v3
-        with:
-          path: ~/openfpm_dependencies/
-          key: almalinux-dep-${{ github.ref }}
-      - name: Setup Ccache
-        run: |
-          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
-          tar -xvf ccache-4.8-linux-x86_64.tar.xz -C $HOME
-          echo "$HOME/ccache-4.8-linux-x86_64/" >> $GITHUB_PATH
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-            append-timestamp: false
-      - name: Build and Pack
-        run: |
-          export PATH="~/ccache-4.8-linux-x86_64/:$PATH"
-          git config --global safe.directory '*'
-          ./build.sh $(pwd) unused pdata 0 ${{ github.ref }}
-          cp $HOME/openfpm_vars $HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
-          cp $HOME/.openfpm.mk $HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
-          export DEP_PACKING=$HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
-          ln -s ./LICENSE.md LICENSE.txt
-          ln -s ./README.md README.txt
-          cd build
-          printf " -DCPACK_RUN_INSTALL_DEPENDENCIES=ON" >> cmake_build_options;
-          bash cmake_build_options;
-          echo "Calling CPACK"
-          cpack -G RPM centos
-          if [ $? -ne 0 ]; then
-            echo "Error creating package"
-            exit 1
-          fi
-          mv openfpm_pdata-*-Linux.rpm openfpm-nightly-Linux-x86_64.rpm
-      - uses: actions/cache/save@v3
-        if: always()
-        with:
-          path: ~/openfpm_dependencies/
-          key: almalinux-dep-${{ github.ref }}
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: openfpm_nightly_builds
-          path: build/openfpm-nightly-Linux-x86_64.rpm
+#  build_almalinux:
+#    runs-on: ubuntu-latest
+#    container: almalinux:8.5
+#    steps:
+#      - name: Install dependencies
+#        run: |
+#          dnf -y --refresh update
+#          yum install -y openssh-clients cmake wget git gcc-c++ gcc-gfortran python39 bzip2 diffutils zlib-devel rpm-build
+#          ln -s /usr/bin/python3 /usr/bin/python
+#      - uses: actions/checkout@v3
+#        with:
+#          submodules: true
+#      - name: Restore Cache dependencies
+#        uses: actions/cache/restore@v3
+#        with:
+#          path: ~/openfpm_dependencies/
+#          key: almalinux-dep-${{ github.ref }}
+#      - name: Setup Ccache
+#        run: |
+#          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+#          tar -xvf ccache-4.8-linux-x86_64.tar.xz -C $HOME
+#          echo "$HOME/ccache-4.8-linux-x86_64/" >> $GITHUB_PATH
+#      - name: ccache
+#        uses: hendrikmuhs/ccache-action@v1.2
+#        with:
+#            append-timestamp: false
+#      - name: Build and Pack
+#        run: |
+#          export PATH="~/ccache-4.8-linux-x86_64/:$PATH"
+#          git config --global safe.directory '*'
+#          ./build.sh $(pwd) unused pdata 0 ${{ github.ref }}
+#          cp $HOME/openfpm_vars $HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
+#          cp $HOME/.openfpm.mk $HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
+#          export DEP_PACKING=$HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
+#          ln -s ./LICENSE.md LICENSE.txt
+#          ln -s ./README.md README.txt
+#          cd build
+#          printf " -DCPACK_RUN_INSTALL_DEPENDENCIES=ON" >> cmake_build_options;
+#          bash cmake_build_options;
+#          echo "Calling CPACK"
+#          cpack -G RPM centos
+#          if [ $? -ne 0 ]; then
+#            echo "Error creating package"
+#            exit 1
+#          fi
+#          mv openfpm_pdata-*-Linux.rpm openfpm-nightly-Linux-x86_64.rpm
+#      - uses: actions/cache/save@v3
+#        if: always()
+#        with:
+#          path: ~/openfpm_dependencies/
+#          key: almalinux-dep-${{ github.ref }}
+#      - name: Upload Artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: openfpm_nightly_builds
+#          path: build/openfpm-nightly-Linux-x86_64.rpm
 #      - name: Single-core Test
 #        run: |
 #          source $HOME/openfpm_vars
@@ -85,11 +87,13 @@ jobs:
   build_macos:
     runs-on: macos-latest
     steps:
-      - name: Setup GNU Fortran
-        uses: modflowpy/install-gfortran-action@v1
-      - name: Install dependencies
+#      - name: Setup GNU Fortran
+#        uses: modflowpy/install-gfortran-action@v1
+      - name: Install OpenFPM and Deps
         run: |
-          brew install cmake wget gcc gnu-sed
+          brew install cmake
+          brew tap abhinavsns/homebrew-abhinavsns
+          brew install --HEAD-only openfpm
       - uses: actions/checkout@v3
         with:
           submodules: true
@@ -104,50 +108,30 @@ jobs:
           key: macos-dep-${{ github.ref }}
       - name: Build & Pack
         run: |
-          export CC=gcc-12
-          export CXX=g++-12
-          ./build.sh $(pwd) unused pdata 0 ${{ github.ref }}
-          cp $HOME/openfpm_vars $HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
-          cp $HOME/.openfpm.mk $HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
-          export DEP_PACKING=$HOME/openfpm_dependencies/openfpm_pdata/${{ github.ref }}
-          ln -s ./LICENSE.md LICENSE.txt
-          ln -s ./README.md README.txt
+          mkdir -p build
           cd build
-          printf " -DCPACK_RUN_INSTALL_DEPENDENCIES=ON" >> cmake_build_options;
-          bash cmake_build_options;
-          echo "Calling CPACK"
-          cpack -G productbuild osx
-          if [ $? -ne 0 ]; then
-            echo "Error creating package"
-            exit 1
-          fi
-          mv openfpm_pdata-*-Darwin.pkg openfpm-nightly-Darwin-x86_64.pkg
-      - uses: actions/cache/save@v3
-        if: always()
-        with:
-          path: ~/openfpm_dependencies/
-          key: macos-dep-${{ github.ref }}
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: openfpm_nightly_builds
-          path: build/openfpm-nightly-Darwin-x86_64.pkg
-#      - name: Single-core Test
-#        run: |
-#          export CC=gcc-12
-#          export CXX=g++-12
-#          source $HOME/openfpm_vars
-#          export OMP_NUM_THREADS=1
-#          ./run.sh $(pwd) unused 1 pdata 0 ${{ github.ref }}
-#          cd openfpm_numerics
-#          ./run.sh $(pwd) unused 1 0 0 numerics ${{ github.ref }}
-#      - name: Multi-core Test
-#        run: |
-#          export CC=gcc-12
-#          export CXX=g++-12
-#          source $HOME/openfpm_vars
-#          export OMP_NUM_THREADS=1
-#          mpirun --allow-run-as-root -np 2 ./build/src/pdata
-#          echo "RUN numerics test"
-#          cd openfpm_numerics
-#          mpirun --allow-run-as-root -np 2 ../build/openfpm_numerics/src/numerics
+          rm -rf *
+          CXX=mpic++ cmake ../.  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=$HOME/install -DCMAKE_BUILD_TYPE=RELEASE -DSE_CLASS1=OFF  -DSE_CLASS2=OFF  -DSE_CLASS3=OFF  -DTEST_COVERAGE=OFF  -DSCAN_COVERTY=OFF  -DTEST_PERFORMANCE=OFF  -DENABLE_ASAN=OFF  -DENABLE_NUMERICS=ON  -DENABLE_GARBAGE_INJECTOR=OFF  -DENABLE_VCLUSTER_GARBAGE_INJECTOR=OFF  -DCUDA_ON_BACKEND=NONE  -DMPI_VENDOR=openmpi  -DMPI_ROOT=($brew --prefix openmpi)  -DPETSC_ROOT=($brew --prefix petsc)  -DBOOST_ROOT=($brew --prefix boost) -DBoost_NO_BOOST_CMAKE=ON  -DHDF5_ROOT=($brew --prefix hdf5-mpi)/  -DBLITZ_ROOT=($brew --prefix blitz)  -DALGOIM_ROOT=($brew --prefix algoim)  -DPARMETIS_ROOT=($brew --prefix parmetis)  -DMETIS_ROOT=($brew --prefix metis)  -DVc_ROOT=($brew --prefix vc)  -DSUITESPARSE_ROOT=($brew --prefix suitesparse)  -DEIGEN3_ROOT=($brew --prefix eigen)
+          make -j 4
+      - name: Single-core Test
+        run: |
+          cd $HOME/openfpm--git
+          export OMP_NUM_THREADS=1
+          echo "Running Single-Core pdata test"
+          cd openfpm_pdata
+          mpirun --allow-run-as-root -np 1 ../build/openfpm_pdata/src/pdata
+          echo "Running Single-Core numerics test"
+          cd ..
+          cd openfpm_numerics
+          mpirun --allow-run-as-root -np 1 ../build/openfpm_pdata/openfpm_io/openfpm_vcluster/openfpm_data/openfpm_devices/openfpm_numerics/src/numerics
+      - name: Multi-core Test
+        run: |
+          cd $HOME/openfpm--git
+          export OMP_NUM_THREADS=1
+          echo "Running Multi-Core pdata test"
+          cd openfpm_pdata
+          mpirun --allow-run-as-root -np 3 ../build/openfpm_pdata/src/pdata
+          echo "Running Multi-Core numerics test"
+          cd ..
+          cd openfpm_numerics
+          mpirun --allow-run-as-root -np 3 ../build/openfpm_pdata/openfpm_io/openfpm_vcluster/openfpm_data/openfpm_devices/openfpm_numerics/src/numerics
