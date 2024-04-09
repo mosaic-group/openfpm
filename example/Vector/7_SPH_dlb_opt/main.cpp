@@ -383,11 +383,11 @@ inline double Wab(double r)
 	r /= H;
 
 	if (r < 1.0)
-	{return (1.0 - 3.0/2.0*r*r + 3.0/4.0*r*r*r)*a2;}
+	   return (1.0 - 3.0/2.0*r*r + 3.0/4.0*r*r*r)*a2;
 	else if (r < 2.0)
-	{return (1.0/4.0*(2.0 - r*r)*(2.0 - r*r)*(2.0 - r*r))*a2;}
+		return (1.0/4.0*(2.0 - r)*(2.0 - r)*(2.0 - r))*a2;
 	else
-	{return 0.0;}
+	   return 0.0;
 }
 
 const double c1 = -3.0/M_PI/H/H/H/H;
@@ -881,7 +881,7 @@ int main(int argc, char* argv[])
 	// extended boundary around the domain, and the processor domain
     // by the support of the cubic kernel
 	Ghost<3,double> g(r_gskin);
-	
+
     /*! \cond [skin_calc] \endcond */
 
 	// Eliminating the lower part of the ghost
@@ -1141,4 +1141,3 @@ int main(int argc, char* argv[])
 
 	openfpm_finalize();
 }
- 
