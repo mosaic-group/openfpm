@@ -50,6 +50,9 @@ ${DEFINE_HAVE_BOOST_CONTEXT} /**/
 /* define if the Boost::Fiber library is available */
 ${DEFINE_HAVE_BOOST_FIBER} /**/
 
+/* Defined if you have Catalyst library */
+${DEFINE_HAVE_CATALYST}
+
 /* Have clock time */
 ${DEFINE_HAVE_CLOCK_GETTIME} /**/
 

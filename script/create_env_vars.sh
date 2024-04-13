@@ -50,6 +50,12 @@ if [ -d "$prefix_dependencies/SUITESPARSE"  -a -f "$prefix_dependencies/SUITESPA
   bash_library="$bash_library:$prefix_dependencies/SUITESPARSE/lib"
 fi
 
+if [ -d "$prefix_dependencies/CATALYST/lib" ]; then
+  bash_library="$bash_library:$prefix_dependencies/CATALYST/lib"
+elif [ -d "$prefix_dependencies/CATALYST/lib64" ]; then
+  bash_library="$bash_library:$prefix_dependencies/CATALYST/lib64"
+fi
+
 # in cygwin we have to add to PATH additional directories
 if [[ "$OSTYPE" == "cygwin" ]]; then
 	bash_path="$bash_path:$prefix_dependencies/BOOST/bin:$prefix_dependencies/HDF5/bin"
