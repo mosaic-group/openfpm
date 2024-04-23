@@ -116,11 +116,12 @@ int main(int argc, char * argv[]) {
   vector_dist_subset<2, double,prop> particles_boundary(particles,1);
   auto & bulk=particles_bulk.getIds();
   auto & boundary=particles_boundary.getIds();
-
+  auto verletList = particles.getVerletWithoutRefP(rCut);
+  int nCount=(rCut/grid_spacing);
   //SurfaceDerivative_x<NORMAL> Sdx(particles, 2, rCut,grid_spacing);
   //SurfaceDerivative_y<NORMAL> Sdy(particles, 2, rCut,grid_spacing);
-  SurfaceDerivative_xx<NORMAL> Sdxx(particles, ord, rCut,grid_spacing);
-  SurfaceDerivative_yy<NORMAL> Sdyy(particles, ord, rCut,grid_spacing);
+  SurfaceDerivative_xx<NORMAL> Sdxx(particles, ord, verletList,grid_spacing,nCount);
+  SurfaceDerivative_yy<NORMAL> Sdyy(particles, ord, verletList,grid_spacing,nCount);
   //SurfaceDerivative_xy<NORMAL> Sdxy(particles, 2, rCut,grid_spacing);
 
   auto f=getV<F>(particles);

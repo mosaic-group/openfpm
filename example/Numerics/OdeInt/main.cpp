@@ -293,8 +293,9 @@ int main(int argc, char* argv[]) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //! @cond [DCPSE1Alias] @endcond
     //We create the DCPSE Based operators for discretization of the operators.
-    Derivative_xx Dxx(Particles, 2, rCut);
-    Derivative_yy Dyy(Particles, 2, rCut);
+    auto verletList = Particles.getVerletWithoutRefP(rCut);
+    Derivative_xx Dxx(Particles, 2, verletList);
+    Derivative_yy Dyy(Particles, 2, verletList);
     //We create aliases for referring to property and and positions.
     auto Pos = getV<PROP_POS>(Particles);
     auto C = getV<0>(Particles);
@@ -384,6 +385,7 @@ int main(int argc, char* argv[]) {
         //We update the subset and operators as the particles moved.
         Particles_bulk.update();
         Particles_boundary.update();
+        Particles.updateVerlet(verletList,rCut);
         Dxx.update(Particles);
         Dyy.update(Particles);
         //Reinitialzing as distributed size can change.

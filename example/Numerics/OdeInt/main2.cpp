@@ -74,7 +74,7 @@
 constexpr int x = 0;
 constexpr int y = 1;
 
-double dt=1e-2,tf=1.0,vf=1.0;
+double dt=1e-2,tf=1.0,vf=1.0,rCut;
 
 void *PointerDistGlobal, *PointerDistSubset,*PointerDistSubset2;
 
@@ -183,16 +183,17 @@ struct RHSFunctor
  *
  */
 //! @cond [Observer2Functor] @endcond
-template<typename DXX,typename DYY>
+template<typename DXX,typename DYY, typename list_type>
 struct ObserverFunctor {
 
     DXX &Dxx;
     DYY &Dyy;
+    list_type &verletList;
     int ctr;
     double t_old;
 
     //Constructor
-    ObserverFunctor(DXX &Dxx, DYY &Dyy) : Dxx(Dxx), Dyy(Dyy) {
+    ObserverFunctor(DXX &Dxx, DYY &Dyy,list_type &verletList) : Dxx(Dxx), Dyy(Dyy), verletList(verletList) {
         //a counter for counting the np. of steps
         ctr = 0;
         //Starting with t=0, we compute the step size take by t-t_old. So for the first observed step size is what we provide. Which will be 0-(-dt)=dt.
@@ -227,6 +228,9 @@ struct ObserverFunctor {
             //Updating the subset and operators based on new positions
             Particles_bulk.update();
             Particles_boundary.update();
+            //Particles.updateVerlet(verletList,rCut); Probably needs a version without reference p.
+            verletList.clear();
+            verletList=Particles.getVerletWithoutRefP(rCut);
             Dxx.update(Particles);
             Dyy.update(Particles);
 
@@ -288,7 +292,7 @@ int main(int argc, char *argv[])
     double spacing[2];
     spacing[0] = 2.0 / (sz[0] - 1);
     spacing[1] = 2.0 / (sz[1] - 1);
-    double rCut = 3.1 * spacing[0];
+    rCut = 3.1 * spacing[0];
     Ghost<2, double> ghost(rCut);
 
     dist_vector_type Particles(0, box, bc, ghost);
@@ -363,8 +367,9 @@ int main(int argc, char *argv[])
      */
     //! @cond [DCPSE2Alias] @endcond
     //We create the DCPSE Based operators for discretization of the operators.
-    Derivative_xx Dxx(Particles, 2, rCut);
-    Derivative_yy Dyy(Particles, 2, rCut);
+    auto verletList = Particles.getVerletWithoutRefP(rCut);
+    Derivative_xx Dxx(Particles, 2, verletList);
+    Derivative_yy Dyy(Particles, 2, verletList);
     //We create aliases for referring to property and and positions.
     auto Pos = getV<PROP_POS>(Particles);
     auto C = getV<0>(Particles);
@@ -399,7 +404,7 @@ int main(int argc, char *argv[])
     RHSFunctor<Derivative_xx, Derivative_yy> System(Dxx, Dyy);
 
     //Since we are using Odeint to control the time steps, we also create a observer instance. Which also updates the position via an euler step for moving thr particles.
-    ObserverFunctor<Derivative_xx, Derivative_yy> ObserveAndUpdate(Dxx, Dyy);
+    ObserverFunctor<Derivative_xx, Derivative_yy, decltype(verletList)> ObserveAndUpdate(Dxx, Dyy, verletList);
 
 
     //Furhter, odeint needs data in a state type "state_type_2d_ofp", we create one and fill in the initial condition.

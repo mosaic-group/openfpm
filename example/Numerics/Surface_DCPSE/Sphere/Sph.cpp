@@ -190,10 +190,11 @@ int main(int argc, char * argv[]) {
   auto Af=getV<ANADF>(particles);
   auto Df=getV<DF>(particles);
   auto f=getV<F>(particles);
-
-  SurfaceDerivative_xx<NORMAL> Sdxx{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_yy<NORMAL> Sdyy{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_zz<NORMAL> Sdzz{particles,ord,rCut,grid_spacing_surf};
+  auto verletList = particles.getVerletWithoutRefP(rCut);
+  unsigned int nCount=(rCut/grid_spacing_surf);
+  SurfaceDerivative_xx<NORMAL> Sdxx{particles,ord,verletList,grid_spacing_surf,nCount};
+  SurfaceDerivative_yy<NORMAL> Sdyy{particles,ord,verletList,grid_spacing_surf,nCount};
+  SurfaceDerivative_zz<NORMAL> Sdzz{particles,ord,verletList,grid_spacing_surf,nCount};
 
   DErr=(Sdxx(Af)+Sdyy(Af)+Sdzz(Af))-f;
   particles.deleteGhost();

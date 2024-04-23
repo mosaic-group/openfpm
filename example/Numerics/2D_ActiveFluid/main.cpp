@@ -99,7 +99,7 @@ double lambda = 0.1;
 
 int wr_f;
 int wr_at;
-double V_err_eps;
+double V_err_eps,rCut;
 
 void *vectorGlobal=nullptr,*vectorGlobal_bulk=nullptr,*vectorGlobal_boundary=nullptr;
 const openfpm::vector<std::string>
@@ -235,7 +235,7 @@ struct PolarEv
  */
 //! @cond [ActiveObserver2Functor] @endcond
 // Functor to calculate velocity and move particles with explicit euler
-template<typename DX,typename DY,typename DXX,typename DXY,typename DYY>
+template<typename DX,typename DY,typename DXX,typename DXY,typename DYY,typename list_type>
 struct CalcVelocity
 {
 
@@ -244,12 +244,13 @@ struct CalcVelocity
     DXX &Dxx;
     DXY &Dxy;
     DYY &Dyy;
+    list_type &verletList,&verletListSubset;
 
     double t_old;
     int ctr;
 
     //Constructor
-    CalcVelocity(DX &Dx,DY &Dy,DXX &Dxx,DXY &Dxy,DYY &Dyy,DX &Bulk_Dx,DY &Bulk_Dy):Dx(Dx),Dy(Dy),Dxx(Dxx),Dxy(Dxy),Dyy(Dyy),Bulk_Dx(Bulk_Dx),Bulk_Dy(Bulk_Dy)
+    CalcVelocity(DX &Dx,DY &Dy,DXX &Dxx,DXY &Dxy,DYY &Dyy,DX &Bulk_Dx,DY &Bulk_Dy,list_type &verletList,list_type &verletListSubset):Dx(Dx),Dy(Dy),Dxx(Dxx),Dxy(Dxy),Dyy(Dyy),Bulk_Dx(Bulk_Dx),Bulk_Dy(Bulk_Dy), verletList(verletList), verletListSubset(verletListSubset)
     {
         t_old = 0.0;
         ctr = 0;
@@ -284,6 +285,20 @@ struct CalcVelocity
             Particles_bulk.update();
             Particles_boundary.update();
             tt.start();
+            verletList.clear();
+            verletList = Particles.getVerletWithoutRefP(rCut);
+            verletListSubset.clear();
+            for(size_t i=0;i<bulk.size();++i) {
+                auto p=bulk.get<0>(i);
+                auto itNN = verletList.getNNIterator(p);
+                while (itNN.isNext()) {
+                    auto nkey = itNN.get();
+                    if (Particles.getSubset(nkey) == 0) {
+                        verletListSubset.addPart(p, nkey);
+                    }
+                    ++itNN;
+                }
+            }
             Dx.update(Particles);
             Dy.update(Particles);
             Dxy.update(Particles);
@@ -592,7 +607,8 @@ int main(int argc, char* argv[])
         Box<2, double> box({0, 0}, {boxsize, boxsize});
         double Lx = box.getHigh(0),Ly = box.getHigh(1);
         size_t bc[2] = {NON_PERIODIC, NON_PERIODIC};
-        double spacing = box.getHigh(0) / (sz[0] - 1),rCut = 3.9 * spacing;
+        double spacing = box.getHigh(0) / (sz[0] - 1);
+        rCut = 3.9 * spacing;
         int ord = 2;
         Ghost<2, double> ghost(rCut);
         auto &v_cl = create_vcluster();
@@ -663,12 +679,26 @@ int main(int argc, char* argv[])
         auto RHS_bulk = getV<VRHS>(Particles_bulk);
         auto div_bulk = getV<DIV>(Particles_bulk);
 
-        Derivative_x Dx(Particles,ord,rCut), Bulk_Dx(Particles_bulk,ord,rCut);
-        Derivative_y Dy(Particles, ord, rCut), Bulk_Dy(Particles_bulk, ord,rCut);
-        Derivative_xy Dxy(Particles, ord, rCut);
+        auto verletList = Particles.getVerletWithoutRefP(rCut);
+        auto verletListSubset = verletList;
+        verletListSubset.clear();
+        for(size_t i=0;i<bulk.size();++i) {
+            auto p=bulk.get<0>(i);
+            auto itNN = verletList.getNNIterator(p);
+            while (itNN.isNext()) {
+                auto nkey = itNN.get();
+                if (Particles.getSubset(nkey) == 0) {
+                    verletListSubset.addPart(p, nkey);
+                }
+                ++itNN;
+            }
+        }
+        Derivative_x Dx(Particles,ord,verletList), Bulk_Dx(Particles_bulk,ord,verletListSubset);
+        Derivative_y Dy(Particles, ord, verletList), Bulk_Dy(Particles_bulk, ord,verletListSubset);
+        Derivative_xy Dxy(Particles, ord, verletList);
         auto Dyx = Dxy;
-        Derivative_xx Dxx(Particles, ord, rCut);
-        Derivative_yy Dyy(Particles, ord, rCut);
+        Derivative_xx Dxx(Particles, ord, verletList);
+        Derivative_yy Dyy(Particles, ord, verletList);
 
         boost::numeric::odeint::runge_kutta4< state_type_2d_ofp,double,state_type_2d_ofp,double,boost::numeric::odeint::vector_space_algebra_ofp> rk4;
 
@@ -677,7 +707,7 @@ int main(int argc, char* argv[])
         vectorGlobal_boundary=(void *) &Particles_boundary;
 
         PolarEv<Derivative_x,Derivative_y,Derivative_xx,Derivative_xy,Derivative_yy> System(Dx,Dy,Dxx,Dxy,Dyy);
-        CalcVelocity<Derivative_x,Derivative_y,Derivative_xx,Derivative_xy,Derivative_yy> CalcVelocityObserver(Dx,Dy,Dxx,Dxy,Dyy,Bulk_Dx,Bulk_Dy);
+        CalcVelocity<Derivative_x,Derivative_y,Derivative_xx,Derivative_xy,Derivative_yy, decltype(verletList)> CalcVelocityObserver(Dx,Dy,Dxx,Dxy,Dyy,Bulk_Dx,Bulk_Dy,verletList,verletListSubset);
 
         state_type_2d_ofp tPol;
         tPol.data.get<0>()=Pol[x];

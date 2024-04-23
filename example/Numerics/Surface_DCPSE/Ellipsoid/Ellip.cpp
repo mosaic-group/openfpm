@@ -16,7 +16,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // ------------------------------------------------------------------------------------------
-
+#include "config.h"
 #include "Vector/vector_dist_subset.hpp"
 #include "DCPSE/DCPSE_op/DCPSE_surface_op.hpp"
 #include "DCPSE/DCPSE_op/DCPSE_Solver.hpp"
@@ -146,9 +146,11 @@ int main(int argc, char * argv[]) {
   auto Pos=getV<POS>(particles);
   auto CurvTensor=getV<CURVT>(particles);
   particles.ghost_get<F,NORMAL,POS>();
-  SurfaceDerivative_x<NORMAL> Sdx{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_y<NORMAL> Sdy{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_z<NORMAL> Sdz{particles,ord,rCut,grid_spacing_surf};
+  auto verletList = particles.getVerletWithoutRefP(rCut);
+  unsigned int Ncount= (rCut/grid_spacing_surf);
+  SurfaceDerivative_x<NORMAL> Sdx{particles,ord,verletList,grid_spacing_surf,Ncount};
+  SurfaceDerivative_y<NORMAL> Sdy{particles,ord,verletList,grid_spacing_surf,Ncount};
+  SurfaceDerivative_z<NORMAL> Sdz{particles,ord,verletList,grid_spacing_surf,Ncount};
 
   auto Na=Sdx(N[0]),Nb=Sdy(N[0]),Nc=Sdz(N[0]),
        Nd=Sdx(N[1]),Ne=Sdy(N[1]),Nf=Sdz(N[1]),

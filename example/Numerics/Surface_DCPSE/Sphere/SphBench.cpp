@@ -142,9 +142,11 @@ int main(int argc, char * argv[]) {
   auto f=getV<F>(particles);
   tt.start();
   tt3.start();
-  SurfaceDerivative_xx<NORMAL> Sdxx{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_yy<NORMAL> Sdyy{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_zz<NORMAL> Sdzz{particles,ord,rCut,grid_spacing_surf};
+   auto verletList = particles.getVerletWithoutRefP(rCut);
+  unsigned int nCount=(rCut/grid_spacing_surf);
+  SurfaceDerivative_xx<NORMAL> Sdxx{particles,ord,verletList,grid_spacing_surf,nCount};
+  SurfaceDerivative_yy<NORMAL> Sdyy{particles,ord,verletList,grid_spacing_surf,nCount};
+  SurfaceDerivative_zz<NORMAL> Sdzz{particles,ord,verletList,grid_spacing_surf,nCount};
   tt3.stop();
   tt2.start();
   particles.ghost_get<F>();

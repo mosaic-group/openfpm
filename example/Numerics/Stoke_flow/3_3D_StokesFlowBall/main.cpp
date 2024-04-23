@@ -297,12 +297,26 @@ int main(int argc, char* argv[])
         double sampling2=1.9;
         double rCut2=3.9*spacing;
 
-        Derivative_x Dx(Particles, 2, rCut,sampling, support_options::RADIUS),B_Dx(Particles_bulk, 2, rCut,sampling, support_options::RADIUS);
-        Derivative_y Dy(Particles, 2, rCut,sampling, support_options::RADIUS),B_Dy(Particles_bulk, 2, rCut,sampling, support_options::RADIUS);
-        Derivative_z Dz(Particles, 2, rCut,sampling, support_options::RADIUS),B_Dz(Particles_bulk, 2, rCut,sampling, support_options::RADIUS);
-        Derivative_xx Dxx(Particles, 2, rCut2,sampling2,support_options::RADIUS);
-        Derivative_yy Dyy(Particles, 2, rCut2,sampling2,support_options::RADIUS);
-        Derivative_zz Dzz(Particles, 2, rCut2,sampling2,support_options::RADIUS);
+        auto verletList = Particles.getVerletWithoutRefP(rCut);
+        auto verletListSubset = verletList;
+        verletListSubset.clear();
+        for(size_t i=0;i<bulk.size();++i) {
+            auto p=bulk.get<0>(i);
+            auto itNN = verletList.getNNIterator(p);
+            while (itNN.isNext()) {
+                auto nkey = itNN.get();
+                if (Particles.getSubset(nkey) == 0) {
+                    verletListSubset.addPart(p, nkey);
+                }
+                ++itNN;
+            }
+        }
+        Derivative_x Dx(Particles, 2, verletList),B_Dx(Particles_bulk, 2, verletListSubset);
+        Derivative_y Dy(Particles, 2, verletList),B_Dy(Particles_bulk, 2, verletListSubset);
+        Derivative_z Dz(Particles, 2, verletList),B_Dz(Particles_bulk, 2, verletListSubset);
+        Derivative_xx Dxx(Particles, 2, verletList);
+        Derivative_yy Dyy(Particles, 2, verletList);
+        Derivative_zz Dzz(Particles, 2, verletList);
 
         //! \cond [Ball1InitAna3] \endcond
 

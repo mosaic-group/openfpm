@@ -1,5 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## OpenFPM 5.0.1 - April 2024
+- Updated DC-PSE implementation to utilize generic verlet list for speedup and adaptive simulations.
+### Changes
+- Syntax for construction of regular DCPSE operators now changes to \
+  `Derivative_xx Dxx(Particles, order, verletList);` \
+  where the verlet list is constructed with  
+  `auto verletList = Particles.getVerletWithoutRefP(rCut);`  
+   Note that regular DCPSE operators need verlet list without the center particle in the neighborhood list.
+- Syntax for construction of **Surface** DCPSE operators now changes to 
+  `SurfaceDerivative_x<NORMAL>Sdx{particles,2,verletList,grid_spacing_surf,Ncount};`<br /> 
+   where `grid_spacing_surf` is the average spacing on the surface and `Ncount` is the number of layers in the normal direction for neighborhood construction. Previous N count was computed internally as 
+  `Ncount=(rCut/grid_spacing_surf);` <br />
+  The surface verlet list is constructed with `auto verletList = Particles.getVerlet(rCut);`
+- Syntax for construction of DCPSE Interpolation operator changes to \
+  `PPInterpolation<vector_dist,vector_dist,decltype(verletList)> Fx(ParticlesFrom,Particles, 2, verletList);` <br />
+  The verlet list is constructed with <br /> 
+  `auto verletList = Particles.getVerlet(rCut,ParticlesFrom)` <br />
+  where `ParticlesFrom` is the set of particles from which the interpolation is done onto the set `Particles`.
+- The previous support options are deperecated and removed including `support_option::Adaptive`. The default option is `support_option::CONSTRUCT` for construction of the DCPSE operators. `support_option::LOAD` could be used for loading a previously saved operator by specifying this option explicitly as an additional parameter in the end.  
 
 ## OpenFPM 5.0.0 - Feb 2024
 - Move to `openfpm` meta OpenFPM project structure with git subprojects `openfpm_data`, `openfpm_devices`, `openfpm_io`, `openfpm_vcluster`, `openfpm_pdata`, `openfpm_numerics`. Example codes, installation scripts for dependencies, configuration scripts moved to `openfpm`. Only source code of `openfpm_pdata` kept in `openfpm_pdata`

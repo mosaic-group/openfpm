@@ -102,10 +102,12 @@ int main(int argc, char * argv[]) {
   particles.deleteGhost();
   particles.write_frame(p_output,0,BINARY);
 
+  auto verletList = particles.getVerletWithoutRefP(rCut);
+  int nCount=(rCut/grid_spacing);
   //SurfaceDerivative_xx<NORMAL> Sdxx{particles,2,rCut,grid_spacing};
   //SurfaceDerivative_yy<NORMAL> Sdyy{particles,2,rCut,grid_spacing};
-  SurfaceDerivative_xx<NORMAL> Sdxx(particles, ord, rCut,grid_spacing);
-  SurfaceDerivative_yy<NORMAL> Sdyy(particles, ord, rCut,grid_spacing);
+  SurfaceDerivative_xx<NORMAL> Sdxx(particles, ord, verletList,grid_spacing, nCount);
+  SurfaceDerivative_yy<NORMAL> Sdyy(particles, ord, verletList,grid_spacing, nCount);
 
   auto f=getV<F>(particles);
   auto df=getV<DF>(particles);

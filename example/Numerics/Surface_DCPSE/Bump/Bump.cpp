@@ -293,17 +293,18 @@ int main(int argc, char * argv[]) {
   timer ttt;
         ttt.start();
         create_directory_if_not_exist("DCPSE");
-        support_options opt;
+        support_option opt;
         if(DCPSE_LOAD){
-            opt=support_options::LOAD;            
+            opt=support_option::LOAD;
         }
         else
         {
-            opt=support_options::ADAPTIVE_SURFACE;              
+            opt=support_option::ADAPTIVE;
         }
-        SurfaceDerivative_xx<NORMAL> Sdxx{particles,2,rCut,SCF,opt};
-        SurfaceDerivative_yy<NORMAL> Sdyy{particles,2,rCut,SCF,opt};
-        SurfaceDerivative_zz<NORMAL> Sdzz{particles,2,rCut,SCF,opt};
+        auto verletList = particles.getVerletWithoutRefP(rCut);
+        SurfaceDerivative_xx<NORMAL> Sdxx{particles,2,verletList,SCF,3,opt};
+        SurfaceDerivative_yy<NORMAL> Sdyy{particles,2,verletList,SCF,3,opt};
+        SurfaceDerivative_zz<NORMAL> Sdzz{particles,2,verletList,SCF,3,opt};
         if(DCPSE_LOAD){
             Sdxx.load(particles,"DCPSE/Dxx");
             Sdyy.load(particles,"DCPSE/Dyy");

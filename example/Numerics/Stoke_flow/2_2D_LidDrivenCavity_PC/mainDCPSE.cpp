@@ -191,12 +191,26 @@ int main(int argc, char* argv[])
 
 
         P_bulk = 0;
-        Derivative_x Dx(Particles, 2, rCut);
-        Derivative_xx Dxx(Particles, 2, rCut);
-        Derivative_yy Dyy(Particles, 2, rCut);
-        Derivative_y Dy(Particles, 2, rCut);
-        Derivative_x Bulk_Dx(Particles_bulk, 2, rCut);
-        Derivative_y Bulk_Dy(Particles_bulk, 2, rCut);
+        auto verletList = Particles.getVerletWithoutRefP(rCut);
+        auto verletListSubset = verletList;
+        verletListSubset.clear();
+        for(size_t i=0;i<bulk.size();++i) {
+            auto p=bulk.get<0>(i);
+            auto itNN = verletList.getNNIterator(p);
+            while (itNN.isNext()) {
+                auto nkey = itNN.get();
+                if (Particles.getSubset(nkey) == 0) {
+                    verletListSubset.addPart(p, nkey);
+                }
+                ++itNN;
+            }
+        }
+        Derivative_x Dx(Particles, 2, verletList);
+        Derivative_xx Dxx(Particles, 2, verletList);
+        Derivative_yy Dyy(Particles, 2, verletList);
+        Derivative_y Dy(Particles, 2, verletList);
+        Derivative_x Bulk_Dx(Particles_bulk, 2, verletListSubset);
+        Derivative_y Bulk_Dy(Particles_bulk, 2, verletListSubset);
 	    //! \cond [LidDCPSEexp] \endcond
 
         /*!

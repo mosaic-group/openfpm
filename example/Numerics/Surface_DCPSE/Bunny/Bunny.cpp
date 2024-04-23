@@ -108,13 +108,15 @@ int main(int argc, char * argv[]) {
   auto f=getV<F>(particles);
   auto N=getV<NORMAL>(particles);
 
-  SurfaceDerivative_x<NORMAL> Sdx{particles,2,rCut,grid_spacing_surf};
-  SurfaceDerivative_y<NORMAL> Sdy{particles,2,rCut,grid_spacing_surf};
-  SurfaceDerivative_z<NORMAL> Sdz{particles,2,rCut,grid_spacing_surf};
+  auto verletList = particles.getVerletWithoutRefP(rCut);
+  unsigned int Ncount=(rCut/grid_spacing_surf);
+  SurfaceDerivative_x<NORMAL> Sdx{particles,2,verletList,grid_spacing_surf,Ncount};
+  SurfaceDerivative_y<NORMAL> Sdy{particles,2,verletList,grid_spacing_surf,Ncount};
+  SurfaceDerivative_z<NORMAL> Sdz{particles,2,verletList,grid_spacing_surf,Ncount};
 
-  SurfaceDerivative_xx<NORMAL> Sdxx{particles,2,rCut,grid_spacing_surf};
-  SurfaceDerivative_yy<NORMAL> Sdyy{particles,2,rCut,grid_spacing_surf};
-  SurfaceDerivative_zz<NORMAL> Sdzz{particles,2,rCut,grid_spacing_surf};
+  SurfaceDerivative_xx<NORMAL> Sdxx{particles,2,verletList,grid_spacing_surf,Ncount};
+  SurfaceDerivative_yy<NORMAL> Sdyy{particles,2,verletList,grid_spacing_surf,Ncount};
+  SurfaceDerivative_zz<NORMAL> Sdzz{particles,2,verletList,grid_spacing_surf,Ncount};
 
   DErr=-0.5*(Sdx(N[0])+Sdy(N[1])+Sdz(N[2]));
   particles.deleteGhost();
