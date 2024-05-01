@@ -42,9 +42,6 @@ jobs:
         brew install abhinavsns/homebrew-openfpm/libhilbert
         brew install abhinavsns/homebrew-openfpm/blitz
         brew install abhinavsns/homebrew-openfpm/algoim
-
-    - name: Configure with CMake
-      run: |
         export CCACHE_DIR="$HOME/.ccache"
         mkdir -p "$CCACHE_DIR"
         mkdir -p build
