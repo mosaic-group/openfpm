@@ -42,7 +42,7 @@ jobs:
 
     - name: Test build
       run: |
-        brew install --verbose -HEAD abhinavsns/homebrew-openfpm/openfpm.rb
+        brew install --verbose --HEAD abhinavsns/homebrew-openfpm/openfpm.rb
 #    - name: Single-core Test
 #        run: |
 #          export CC=gcc-12
