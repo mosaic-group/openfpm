@@ -18,6 +18,8 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
 
     - name: Set up Homebrew
       uses: Homebrew/actions/setup-homebrew@master
