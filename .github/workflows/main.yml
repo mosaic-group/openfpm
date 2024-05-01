@@ -48,6 +48,8 @@ jobs:
         mkdir -p build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release \
+               -DLD_FLAGS='-Wl,-ld_classic' \
+               -DDYLD_LIBRARY_PATH=$(brew --prefix suitesparse)/lib:$(brew --prefix metis)/lib \
                -DSE_CLASS1=OFF \
                -DSE_CLASS2=OFF \
                -DSE_CLASS3=OFF \
