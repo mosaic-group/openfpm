@@ -63,7 +63,7 @@ jobs:
                  -DENABLE_GARBAGE_INJECTOR=OFF  \
                  -DENABLE_VCLUSTER_GARBAGE_INJECTOR=OFF  \
                  -DCUDA_ON_BACKEND=NONE
-                 -DMPI_ROOT=$(brew --prefix petsc) \
+                 -DMPI_ROOT=$(brew --prefix openmpi) \
                  -DPETSC_ROOT=$(brew --prefix petsc) \
                  -DBOOST_ROOT=$(brew --prefix boost) \
                  -DBoost_NO_BOOST_CMAKE=ON \
