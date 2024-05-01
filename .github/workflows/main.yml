@@ -48,6 +48,7 @@ jobs:
         cd build
         export CXX=mpic++
         cmake .. -DCMAKE_CXX_COMPILER=mpic++ \
+                 -DLIBHILBERT_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/libhilbert) \
                  -DLD_FLAGS='-Wl,-ld_classic' \
                  -DCMAKE_INSTALL_PREFIX=$HOME/install5 \
                  -DCMAKE_BUILD_TYPE=RELEASE  \
@@ -67,7 +68,6 @@ jobs:
                  -DBOOST_ROOT=$(brew --prefix boost) \
                  -DBoost_NO_BOOST_CMAKE=ON \
                  -DHDF5_ROOT=$(brew --prefix hdf5-mpi) \
-                 -DLIBHILBERT_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/libhilbert) \
                  -DBLITZ_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/blitz) \
                  -DALGOIM_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/algoim) \
                  -DPARMETIS_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/parmetis) \
