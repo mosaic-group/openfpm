@@ -28,6 +28,7 @@ jobs:
         path: |
           ~/Library/Caches/Homebrew
           /home/linuxbrew/.cache/Homebrew
+          $HOME/.ccache
         key: ${{ runner.os }}-homebrew-${{ hashFiles('**/*.rb') }}
         restore-keys: |
           ${{ runner.os }}-homebrew-
@@ -40,9 +41,43 @@ jobs:
         brew install abhinavsns/homebrew-openfpm/blitz
         brew install abhinavsns/homebrew-openfpm/algoim
 
-    - name: Test build
+    - name: Configure with CMake
       run: |
-        brew install --verbose --HEAD abhinavsns/homebrew-openfpm/openfpm
+        export CCACHE_DIR="$HOME/.ccache"
+        mkdir -p "$CCACHE_DIR"
+        mkdir -p build
+        cd build
+        cmake .. ${{ std_cmake_args }} \
+               -DCMAKE_BUILD_TYPE=Release \
+               -DSE_CLASS1=OFF \
+               -DSE_CLASS2=OFF \
+               -DSE_CLASS3=OFF \
+               -DTEST_COVERAGE=OFF \
+               -DSCAN_COVERTY=OFF \
+               -DTEST_PERFORMANCE=OFF \
+               -DENABLE_ASAN=OFF \
+               -DENABLE_NUMERICS=ON \
+               -DENABLE_GARBAGE_INJECTOR=OFF \
+               -DENABLE_VCLUSTER_GARBAGE_INJECTOR=OFF \
+               -DMPI_VENDOR=openmpi \
+               -DMPI_ROOT=$(brew --prefix petsc) \
+               -DPETSC_ROOT=$(brew --prefix petsc) \
+               -DBOOST_ROOT=$(brew --prefix boost) \
+               -DBoost_NO_BOOST_CMAKE=ON \
+               -DHDF5_ROOT=$(brew --prefix hdf5-mpi) \
+               -DLIBHILBERT_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/libhilbert) \
+               -DBLITZ_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/blitz) \
+               -DALGOIM_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/algoim) \
+               -DPARMETIS_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/parmetis) \
+               -DMETIS_ROOT=$(brew --prefix metis) \
+               -DOPENBLAS_ROOT=$(brew --prefix openblas) \
+               -DSUITESPARSE_ROOT=$(brew --prefix suite-sparse) \
+               -DEIGEN3_ROOT=$(brew --prefix eigen) \
+               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+               -DCMAKE_C_COMPILER_LAUNCHER=ccache
+    - name: Build and install
+      run: make install
+
 #    - name: Single-core Test
 #        run: |
 #          export CC=gcc-12
