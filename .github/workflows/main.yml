@@ -47,8 +47,7 @@ jobs:
         mkdir -p "$CCACHE_DIR"
         mkdir -p build
         cd build
-        cmake .. ${{ std_cmake_args }} \
-               -DCMAKE_BUILD_TYPE=Release \
+        cmake .. -DCMAKE_BUILD_TYPE=Release \
                -DSE_CLASS1=OFF \
                -DSE_CLASS2=OFF \
                -DSE_CLASS3=OFF \
