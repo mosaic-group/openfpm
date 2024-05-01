@@ -47,35 +47,42 @@ jobs:
         mkdir -p "$CCACHE_DIR"
         mkdir -p build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release \
-               -DLD_FLAGS='-Wl,-ld_classic' \
-               -DDYLD_LIBRARY_PATH=$(brew --prefix suitesparse)/lib:$(brew --prefix metis)/lib \
-               -DSE_CLASS1=OFF \
-               -DSE_CLASS2=OFF \
-               -DSE_CLASS3=OFF \
-               -DTEST_COVERAGE=OFF \
-               -DSCAN_COVERTY=OFF \
-               -DTEST_PERFORMANCE=OFF \
-               -DENABLE_ASAN=OFF \
-               -DENABLE_NUMERICS=ON \
-               -DENABLE_GARBAGE_INJECTOR=OFF \
-               -DENABLE_VCLUSTER_GARBAGE_INJECTOR=OFF \
-               -DMPI_VENDOR=openmpi \
-               -DMPI_ROOT=$(brew --prefix openmpi) \
-               -DPETSC_ROOT=$(brew --prefix petsc) \
-               -DBOOST_ROOT=$(brew --prefix boost) \
-               -DBoost_NO_BOOST_CMAKE=ON \
-               -DHDF5_ROOT=$(brew --prefix hdf5-mpi) \
-               -DLIBHILBERT_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/libhilbert) \
-               -DBLITZ_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/blitz) \
-               -DALGOIM_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/algoim) \
-               -DPARMETIS_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/parmetis) \
-               -DMETIS_ROOT=$(brew --prefix metis) \
-               -DOPENBLAS_ROOT=$(brew --prefix openblas) \
-               -DSUITESPARSE_ROOT=$(brew --prefix suite-sparse) \
-               -DEIGEN3_ROOT=$(brew --prefix eigen) \
-               -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-               -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/openfpmInstall \
+                 -DCMAKE_INSTALL_LIBDIR=lib \
+                 -DCMAKE_BUILD_TYPE=Release \
+                 -DCMAKE_FIND_FRAMEWORK=LAST \
+                 -DCMAKE_VERBOSE_MAKEFILE=ON \
+                 -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
+                 -Wno-dev \
+                 -DBUILD_TESTING=OFF \
+                 -DCMAKE_OSX_SYSROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk \
+                 -DCMAKE_BUILD_TYPE=Release \
+                 -DSE_CLASS1=OFF \
+                 -DSE_CLASS2=OFF \
+                 -DSE_CLASS3=OFF \
+                 -DTEST_COVERAGE=OFF \
+                 -DSCAN_COVERTY=OFF \
+                 -DTEST_PERFORMANCE=OFF \
+                 -DENABLE_ASAN=OFF \
+                 -DENABLE_NUMERICS=ON \
+                 -DENABLE_GARBAGE_INJECTOR=OFF \
+                 -DENABLE_VCLUSTER_GARBAGE_INJECTOR=OFF \
+                 -DMPI_VENDOR=openmpi \
+                 -DMPI_ROOT=$(brew --prefix petsc) \
+                 -DPETSC_ROOT=$(brew --prefix petsc) \
+                 -DBOOST_ROOT=$(brew --prefix boost) \
+                 -DBoost_NO_BOOST_CMAKE=ON \
+                 -DHDF5_ROOT=$(brew --prefix hdf5-mpi) \
+                 -DLIBHILBERT_ROOT=$(brew --prefix libhilbert) \
+                 -DBLITZ_ROOT=$(brew --prefix blitz) \
+                 -DALGOIM_ROOT=$(brew --prefix algoim) \
+                 -DPARMETIS_ROOT=$(brew --prefix parmetis) \
+                 -DMETIS_ROOT=$(brew --prefix metis) \
+                 -DOPENBLAS_ROOT=$(brew --prefix openblas) \
+                 -DSUITESPARSE_ROOT=$(brew --prefix suite-sparse) \
+                 -DEIGEN3_ROOT=$(brew --prefix eigen) \
+                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+                 -DCMAKE_C_COMPILER_LAUNCHER=ccache
     - name: Build and install
       run: make install
 
