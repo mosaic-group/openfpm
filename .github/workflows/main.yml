@@ -70,10 +70,10 @@ jobs:
                  -DBOOST_ROOT=$(brew --prefix boost) \
                  -DBoost_NO_BOOST_CMAKE=ON \
                  -DHDF5_ROOT=$(brew --prefix hdf5-mpi) \
-                 -DLIBHILBERT_ROOT=$(brew --prefix libhilbert) \
-                 -DBLITZ_ROOT=$(brew --prefix blitz) \
-                 -DALGOIM_ROOT=$(brew --prefix algoim) \
-                 -DPARMETIS_ROOT=$(brew --prefix parmetis) \
+                 -DLIBHILBERT_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/libhilbert) \
+                 -DBLITZ_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/blitz) \
+                 -DALGOIM_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/algoim) \
+                 -DPARMETIS_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/parmetis) \
                  -DMETIS_ROOT=$(brew --prefix metis) \
                  -DOPENBLAS_ROOT=$(brew --prefix openblas) \
                  -DSUITESPARSE_ROOT=$(brew --prefix suite-sparse) \
