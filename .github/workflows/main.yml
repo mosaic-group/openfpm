@@ -39,9 +39,9 @@ jobs:
       run: |
         brew install cmake ccache petsc boost vc eigen hdf5-mpi
         brew install abhinavsns/homebrew-openfpm/parmetis
-        brew install abhinavsns/homebrew-openfpm/libhilbert
-        brew install abhinavsns/homebrew-openfpm/blitz
-        brew install abhinavsns/homebrew-openfpm/algoim
+        brew install -s abhinavsns/homebrew-openfpm/libhilbert
+        brew install -s abhinavsns/homebrew-openfpm/blitz
+        brew install -s abhinavsns/homebrew-openfpm/algoim
         export CCACHE_DIR="$HOME/.ccache"
         mkdir -p "$CCACHE_DIR"
         mkdir -p build
