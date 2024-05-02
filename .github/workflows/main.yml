@@ -47,7 +47,8 @@ jobs:
         mkdir -p build
         cd build
         export CXX=mpic++
-        cmake .. -DCMAKE_CXX_COMPILER=mpic++ \
+        cmake .. -DCMAKE_PREFIX_PATH=$(brew --prefix) \
+                 -DCMAKE_CXX_COMPILER=mpic++ \
                  -DLIBHILBERT_ROOT=$(brew --prefix abhinavsns/homebrew-openfpm/libhilbert) \
                  -DLD_FLAGS='-Wl,-ld_classic' \
                  -DDYLD_LIBRARY_PATH=$(brew --prefix suitesparse)/lib:$(brew --prefix metis)/lib \
