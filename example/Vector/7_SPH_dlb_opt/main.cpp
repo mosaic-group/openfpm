@@ -1073,7 +1073,7 @@ int main(int argc, char* argv[])
 			vd.ghost_get<type,rho,Pressure,velocity>();
 
 			/*! \cond [update_verlet_crs] \endcond */
-			vd.updateVerlet(NN,r_gskin,VL_CRS_SYMMETRIC);
+			vd.updateVerlet(NN,r_gskin);
 			/*! \cond [update_verlet_crs] \endcond */
 
 			tot_disp = 0.0;

@@ -1148,7 +1148,7 @@ int main(int argc, char* argv[])
 
 			vd.ghost_get<type,rho,Pressure,velocity,12>();
 
-			//vd.updateVerlet(NN,r_gskin,VL_CRS_SYMMETRIC);
+			//vd.updateVerlet(NN,r_gskin);
 			NN = vd.getVerletCrs(r_gskin);
 
 			vd.write("Debug");

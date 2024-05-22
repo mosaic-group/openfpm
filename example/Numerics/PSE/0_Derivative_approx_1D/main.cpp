@@ -210,9 +210,7 @@ int main(int argc, char* argv[])
 	//
 
     // get and construct the Cell list
-
-	Ghost<1,double> gp(enlarge);
-    auto cl = vd.getCellList(12*eps,gp);
+	auto cl = vd.getCellList(12*eps, CL_NON_SYMMETRIC, false, enlarge)
 
     // Maximum infinity norm
     double linf = 0.0;

@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 	 *
 	 * ## Multi phase Verlet-list ##
 	 *
-	 * In general verlet-list can be constructed from the vector itself using **getVerlerList()**
+	 * In general verlet-list can be constructed from the vector itself using **getVerlet()**
 	 *
 	 * \see \ref Vector_3_md_vl
 	 *

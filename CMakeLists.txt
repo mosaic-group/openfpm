@@ -164,6 +164,7 @@ add_subdirectory(openfpm_pdata)
 
 if (ENABLE_NUMERICS)
 	add_subdirectory(openfpm_numerics)
+	set(DEFINE_ENABLE_NUMERICS "#define ENABLE_NUMERICS")
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config_cmake.h.in ${PROJECT_BINARY_DIR}/config/config.h)

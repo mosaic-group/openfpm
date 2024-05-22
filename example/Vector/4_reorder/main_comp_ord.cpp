@@ -57,7 +57,7 @@ template<typename CellList> void calc_forces(vector_dist<3,double, aggregate<dou
 	//! \cond [NN iterator] \endcond
 
 	// Get an iterator over particles
-	auto it2 = NN.getIterator();
+	auto it2 = NN.getCellParticleIterator();
 
 	//! \cond [NN iterator] \endcond
 
@@ -148,7 +148,7 @@ template<typename CellList> double calc_energy(vector_dist<3,double, aggregate<d
 	vd.updateCellList(NN);
 
 	// Get the iterator
-	auto it2 = NN.getIterator();
+	auto it2 = NN.getCellParticleIterator();
 
 	// For each particle ...
 	while (it2.isNext())
@@ -304,8 +304,9 @@ int main(int argc, char* argv[])
 	 *
 	 * ### Cell lists ###
 	 *
-	 * Instead of getting the normal cell list we get an hilbert curve cell-list. Such cell list has a
-	 * function called **getIterator** used inside the function **calc_forces** and **calc_energy**
+	 * Instead of getting the normal cell list we get an hilbert curve cell-list by passing flag **CL_HILBERT_CELL_KEYS**
+	 * to **getCellList** or by directly calling **getCellList_hilb**. Such cell list has a
+	 * function called **getCellParticleIterator** used inside the function **calc_forces** and **calc_energy**
 	 * that iterate across all the particles but in a smart-way. In practice
 	 * given an r-cut a cell-list is constructed with the provided spacing. Suppose to have a cell-list
 	 * \f$ m \times n \f$, an hilbert curve \f$ 2^k \times 2^k \f$ is contructed with \f$ k = ceil(log_2(max(m,n))) \f$.

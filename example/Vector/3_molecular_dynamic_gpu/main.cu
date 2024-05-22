@@ -1,5 +1,3 @@
-#define SCAN_WITH_CUB
-
 /*!
  * \page Vector_3_md_dyn_gpu Vector 3 molecular dynamic on GPU
  *
@@ -230,7 +228,7 @@ __global__ void particle_energy(vector_dist_type vd, NN_type NN, real_number sig
 
 template<typename CellList> void calc_forces(vector_dist_gpu<3,real_number, aggregate<real_number[3],real_number[3],real_number> > & vd, CellList & NN, real_number sigma12, real_number sigma6, real_number r_cut2)
 {
-	vd.updateCellList(NN);
+	vd.updateCellListGPU(NN);
 
 	// Get an iterator over particles
 	auto it2 = vd.getDomainIteratorGPU();
@@ -245,7 +243,7 @@ template<typename CellList> real_number calc_energy(vector_dist_gpu<3,real_numbe
 	real_number rc = r_cut2;
 	real_number shift = 2.0 * ( sigma12 / (rc*rc*rc*rc*rc*rc) - sigma6 / ( rc*rc*rc) );
 
-	vd.updateCellList(NN);
+	vd.updateCellListGPU(NN);
 
 	auto it2 = vd.getDomainIteratorGPU();
 
@@ -328,7 +326,7 @@ int main(int argc, char* argv[])
 	//! \cond [md steps] \endcond
 
 	// Get the Cell list structure
-	auto NN = vd.getCellListGPU(r_cut, 2);
+	auto NN = vd.getCellListGPU(r_cut, CL_NON_SYMMETRIC, 2);
 
 	// The standard
 	// auto NN = vd.getCellList(r_cut);

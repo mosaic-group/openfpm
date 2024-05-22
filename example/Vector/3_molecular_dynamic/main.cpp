@@ -438,7 +438,7 @@ int main(int argc, char* argv[])
 	//! \cond [md steps] \endcond
 
 	// Get the Cell list structure
-	auto NN = vd.getCellList<CELL_MEMBAL(3,double)>(r_cut);
+	auto NN = vd.getCellList<CELL_MEMBAL<3,double>>(r_cut);
 
 	// The standard
 	// auto NN = vd.getCellList(r_cut);

@@ -392,8 +392,8 @@ int main(int argc, char* argv[])
 	//! \cond [cell_list_types] \endcond
 
 	// Get cell list
-	auto NN4 = vd.getCellList<CELL_MEMBAL(3,float)>(r_cut);
-	auto NN5 = vd.getCellList<CELL_MEMMW(3,float)>(r_cut);
+	auto NN4 = vd.getCellList<CELL_MEMBAL<3,float>>(r_cut);
+	auto NN5 = vd.getCellList<CELL_MEMMW<3,float>>(r_cut);
 
 	//! \cond [cell_list_types] \endcond
 

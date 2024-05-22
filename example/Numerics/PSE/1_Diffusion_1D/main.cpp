@@ -339,13 +339,11 @@ int main(int argc, char* argv[])
 	// keeping ghost size and padding area unrelated give us the possibility to show how to create a CellList
 	// on a area bigger than the domain + ghost
 	
-	Ghost<1,double> gp(enlarge);
-        
-        // Create a Cell list with Cell spaping 8*epsilon, the CellList is created on a domain+ghost+enlarge space
-        auto cl = vd.getCellList(8*eps,gp);
+	// Create a Cell list with Cell spaping 8*epsilon, the CellList is created on a domain+ghost+enlarge space
+	auto cl = vd.getCellList(8*eps, CL_NON_SYMMETRIC, false, enlarge)
 
-        // Maximum infinity norm
-        double linf = 0.0;
+	// Maximum infinity norm
+	double linf = 0.0;
 
 	//
 	// ### WIKI 13 ###
