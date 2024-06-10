@@ -872,7 +872,7 @@ int main(int argc, char* argv[])
 
 	vd.ghost_get<type,rho,Pressure,velocity>(RUN_ON_DEVICE);
 
-	auto NN = vd.getCellListGPU/*<CELLLIST_GPU_SPARSE<3,float>>*/(2*H / 2.0, CL_NON_SYMMETRIC | CL_GPU_REORDER, 2);
+	auto NN = vd.getCellListGPU(2*H / 2.0, CL_NON_SYMMETRIC | CL_GPU_REORDER_POSITION | CL_GPU_REORDER_PROPERTY | CL_GPU_RESTORE_PROPERTY, 2);
 
 	timer tot_sim;
 	tot_sim.start();
