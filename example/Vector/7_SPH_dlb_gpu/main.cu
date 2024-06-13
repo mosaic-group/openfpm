@@ -213,7 +213,7 @@ inline void EqState(particles & vd)
 	// You can use standard CUDA kernel launch or the macro CUDA_LAUNCH
 
 	//EqState_gpuning<<<it.wthr,it.thr>>>(vd.toKernel(),B);
-	CUDA_LAUNCH(EqState_gpu,it,vd.toKernel(),B)
+	CUDA_LAUNCH(EqState_gpu,it,vd.toKernel(),B);
 }
 
 
@@ -454,10 +454,10 @@ template<typename CellList> inline void calc_forces(particles & vd, CellList & N
 	auto part = vd.getDomainIteratorGPU(32);
 
 	// Update the cell-list
-	vd.updateCellList(NN);
+	vd.updateCellListGPU(NN);
 
 	//calc_forces_gpu<<<part.wthr,part.thr>>>(vd.toKernel(),NN.toKernel(),W_dap,cbar);
-	CUDA_LAUNCH(calc_forces_gpu,part,vd.toKernel(),NN.toKernel(),W_dap,cbar)
+	CUDA_LAUNCH(calc_forces_gpu,part,vd.toKernel(),NN.toKernel(),W_dap,cbar);
 
 	max_visc = reduce_local<red,_max_>(vd);
 }
@@ -985,7 +985,7 @@ int main(int argc, char* argv[])
 			// and ghost are updated
 			vd.map(RUN_ON_DEVICE);
 			vd.ghost_get<type,rho,Pressure,velocity>(RUN_ON_DEVICE);
-			vd.updateCellList(NN);
+			vd.updateCellListGPU(NN);
 
 			// calculate the pressure at the sensor points
 			//sensor_pressure(vd,NN,press_t,probes);
