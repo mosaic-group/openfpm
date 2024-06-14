@@ -8,7 +8,7 @@ CUDA_CC_LINK=
 
 ifdef HIP
     CUDA_CC=hipcc
-    CUDA_OPTIONS=-O3 --std=c++14 -D__NVCC__ -D__HIP__ -DCUDART_VERSION=11000 -D__CUDACC__ -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=0 -D__CUDACC_VER_BUILD__=0
+    CUDA_OPTIONS=-O3 --std=c++17 -D__NVCC__ -D__HIP__ -DCUDART_VERSION=11000 -D__CUDACC__ -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=0 -D__CUDACC_VER_BUILD__=0
     LIBS_SELECT=$(LIBS)
     CC=hipcc
     CUDA_CC_LINK=hipcc
@@ -18,7 +18,7 @@ else
         CUDA_CC=mpic++ -x c++
         INCLUDE_PATH_NVCC=$(INCLUDE_PATH)
         CUDA_CC_LINK=mpic++
-        CUDA_OPTIONS=-O3 --std=c++14 -DTEST_RUN
+        CUDA_OPTIONS=-O3 --std=c++17 -DTEST_RUN
         LIBS_SELECT=$(LIBS) -lboost_context
     else
         ifeq (, $(shell which nvcc))
@@ -31,7 +31,7 @@ else
             INCLUDE_PATH_NVCC:=-Xcompiler=-Wno-deprecated-declarations $(INCLUDE_PATH_NVCC)
             CUDA_CC=nvcc -ccbin=mpic++
             CUDA_CC_LINK=nvcc -ccbin=mpic++
-            CUDA_OPTIONS=-O3 --std=c++14 -DTEST_RUN -use_fast_math  -arch=sm_61 -lineinfo --extended-lambda --expt-relaxed-constexpr
+            CUDA_OPTIONS=-O3 --std=c++17 -DTEST_RUN -use_fast_math  -arch=sm_61 -lineinfo --extended-lambda --expt-relaxed-constexpr
             LIBS_SELECT=$(LIBS_NVCC)
         endif
     endif
@@ -46,7 +46,7 @@ else
     CUDA_CC_LINK:=$(CUDA_CC_LINK)
 endif
 
-OPT=-g -O3 --std=c++14 -DTEST_RUN
+OPT=-g -O3 --std=c++17 -DTEST_RUN
 INCLUDE_PATH:=-Wno-deprecated-declarations $(INCLUDE_PATH) 
 
 INCLUDE_PATH_NVCC:=$(INCLUDE_PATH_NVCC) -I./include 

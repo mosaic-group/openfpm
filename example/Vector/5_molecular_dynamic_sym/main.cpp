@@ -387,7 +387,7 @@ int main(int argc, char* argv[])
 			vd.map();
 			vd.template ghost_get<>();
 			// Get the Cell list structure
-			vd.updateVerlet(NN,r_gskin,VL_SYMMETRIC);
+			vd.updateVerlet(NN,r_gskin);
 		}
 		else
 		{

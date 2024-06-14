@@ -210,9 +210,7 @@ int main(int argc, char* argv[])
 	//
 
     // get and construct the Cell list
-
-	Ghost<1,double> gp(enlarge);
-    auto cl = vd.getCellList(12*eps,gp);
+	auto cl = vd.getCellList(12*eps, CL_NON_SYMMETRIC, false, enlarge);
 
     // Maximum infinity norm
     double linf = 0.0;
@@ -251,7 +249,7 @@ int main(int argc, char* argv[])
     	double prp_x = vd.template getProp<0>(key);
 
     	// Get the neighborhood of the particles
-    	auto NN = cl.getNNIterator(cl.getCell(p));
+	auto NN = cl.getNNIteratorBox(cl.getCell(p));
     	while(NN.isNext())
     	{
     		auto nnp = NN.get();

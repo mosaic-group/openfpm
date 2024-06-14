@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 		particles.ghost_get<>();
 
 		// Calculate the force at t + dt
-		particles.updateCellListSym(NN);
+		particles.updateCellList(NN);
 		force = applyKernel_in_sim(particles,NN,lennard_jones);
 
 		// 2-step Verlet velocity

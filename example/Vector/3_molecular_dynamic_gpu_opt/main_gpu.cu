@@ -46,8 +46,7 @@
  * all particles processed by one SM stay in one cell or few neighborhood cell, the number of cache line that an SM has to read is
  * reduced, with a significant speed-up.
  *
- * In OpenFPM get a Cell-list produce a re-ordered version of the original vector by default. It is possible to offload the sorted
- *  version vector_dist_gpu instead of the normal one using the function \b toKernel_sorted() \b instead of the function \b toKernel \b.
+ * In OpenFPM \b getCellListGPU() \b produces a re-ordered version of the original vector when CL_GPU_REORDER option is enabled.
  *
  * \snippet Vector/3_molecular_dynamic_gpu_opt/main_gpu.cu calc_force_sorted
  *
@@ -255,22 +254,19 @@ __global__ void particle_energy(vector_dist_type vd, NN_type NN, real_number sig
 
 template<typename CellList> void calc_forces(vector_dist_gpu<3,real_number, aggregate<real_number[3],real_number[3],real_number> > & vd, CellList & NN, real_number sigma12, real_number sigma6, real_number r_cut2)
 {
-	vd.updateCellList(NN);
-
 	// Get an iterator over particles
 	auto it2 = vd.getDomainIteratorGPU();
 
 	//! \cond [calc_force_sorted] \endcond
 
-	CUDA_LAUNCH(calc_force_gpu,it2,vd.toKernel_sorted(),NN.toKernel(),sigma12,sigma6,r_cut2);
+	// reorder positions only (no properties)
+	// as nothing else is needed to be read in calc_force_gpu
+	vd.template updateCellListGPU<>(NN);
+
+	CUDA_LAUNCH(calc_force_gpu,it2,vd.toKernel(),NN.toKernel(),sigma12,sigma6,r_cut2);
 
 	//! \cond [calc_force_sorted] \endcond
-
-	//! \cond [merge_sort] \endcond
-
-	vd.merge_sort<force>(NN);
-
-	//! \cond [merge_sort] \endcond
+	vd.template restoreOrder<force>(NN);
 }
 
 template<typename CellList> real_number calc_energy(vector_dist_gpu<3,real_number, aggregate<real_number[3],real_number[3],real_number> > & vd, CellList & NN, real_number sigma12, real_number sigma6, real_number r_cut2)
@@ -278,13 +274,13 @@ template<typename CellList> real_number calc_energy(vector_dist_gpu<3,real_numbe
 	real_number rc = r_cut2;
 	real_number shift = 2.0 * ( sigma12 / (rc*rc*rc*rc*rc*rc) - sigma6 / ( rc*rc*rc) );
 
-	vd.updateCellList(NN);
+	vd.template updateCellListGPU<velocity>(NN);
 
 	auto it2 = vd.getDomainIteratorGPU();
 
-	CUDA_LAUNCH(particle_energy,it2,vd.toKernel_sorted(),NN.toKernel(),sigma12,sigma6,shift,r_cut2);
+	CUDA_LAUNCH(particle_energy,it2,vd.toKernel(),NN.toKernel(),sigma12,sigma6,shift,r_cut2);
 
-	vd.merge_sort<energy>(NN);
+	vd.template restoreOrder<energy>(NN);
 
 	// Calculated energy
 	return reduce_local<energy,_add_>(vd);
@@ -361,7 +357,7 @@ int main(int argc, char* argv[])
 	//! \cond [get_half_cl] \endcond
 
 	// Get the Cell list structure
-	auto NN = vd.getCellListGPU(r_cut / 2.0, 2);
+	auto NN = vd.getCellListGPU(r_cut / 2.0, CL_NON_SYMMETRIC | CL_GPU_REORDER, 2);
 
 	//! \cond [get_half_cl] \endcond
 
@@ -377,7 +373,6 @@ int main(int argc, char* argv[])
 	{
 		// Get the iterator
 		auto it3 = vd.getDomainIteratorGPU();
-
 		CUDA_LAUNCH(update_velocity_position,it3,vd.toKernel(),dt);
 
 		// Because we moved the particles in space we have to map them and re-sync the ghost
@@ -393,7 +388,7 @@ int main(int argc, char* argv[])
 		CUDA_LAUNCH(update_velocity,it4,vd.toKernel(),dt);
 
 		// After every iteration collect some statistic about the configuration
-		if (i % 1000 == 0)
+		if (i % 100 == 0)
 		{
 			vd.deviceToHostPos();
 			vd.deviceToHostProp<0,1,2>();

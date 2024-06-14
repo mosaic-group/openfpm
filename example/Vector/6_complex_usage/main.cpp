@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
 
 		Point<3,float> xp = vd.getPos(p);
 
-		auto Np = NN.getNNIterator(NN.getCell(vd.getPos(p)));
+		auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(p)));
 
 		while (Np.isNext())
 		{
@@ -265,7 +265,7 @@ int main(int argc, char* argv[])
 
 		Point<3,float> xp = vd.getPos(p);
 
-		auto Np = NN2.getNNIteratorSym(NN2.getCell(vd.getPos(p)),p.getKey(),vd.getPosVector());
+		auto Np = NN2.getNNIteratorBoxSym(NN2.getCell(vd.getPos(p)),p.getKey(),vd.getPosVector());
 
 		while (Np.isNext())
 		{

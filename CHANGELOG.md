@@ -1,6 +1,22 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## OpenFPM 5.1.0 - Jun 2024
+- Refactor implementations of cell list and Verlet list `CellList`, `CellList_gpu`,`VerletList` and all neighborhood iterators. Move from keeping two sets (unordered and ordered) of positions/property vectors to reordering explicitly before launching CUDA kernels that utilize this feature
+
+### Added
+- Add adaptive cut-off radius Verlet list on CPU. Particles individual radii are passed as a vector to `getVerletAdaptRCut` of `openfpm_pdata`. Time complexity: O(N^2)
+
+### Changes
+- `cuda_launch` is a function instead of a macro
+- Move project c++ standard to c++17
+- Add bit-wise option flags that control lell list behaviour. Pass as a parameter `opt` to `getCellList` of `openfpm_pdata` or set directly on cell list via `setOpt`
+- Add support for the following cell list bit-wise option flags: `CL_SYMMETRIC`, `CL_NON_SYMMETRIC`, `CL_LOCAL_SYMMETRIC`, `CL_LINEAR_CELL_KEYS`, `CL_HILBERT_CELL_KEYS`, `CL_GPU_REORDER`, where for the last one `CL_GPU_REORDER` control options for reordering/restoring operations could be more fine-tuned: `CL_GPU_REORDER_POSITION`, `CL_GPU_REORDER_PROPERTY`, `CL_GPU_RESTORE_POSITION`, `CL_GPU_RESTORE_PROPERTY`
+- Add bit-wise option flags that control Verlet list behaviour. Pass as a template parameter `opt` in `VerletList` or pass Verlet list type with `opt` set to `getVerlet` of `openfpm_pdata`. The difference in how `opt` is set for cell list and Verlet list is due to legacy code
+- Add support for the following Verlet list bit-wise option flags: `VL_NON_SYMMETRIC`, `VL_SYMMETRIC`, `VL_CRS_SYMMETRIC`, `VL_ADAPTIVE_RCUT`, `VL_NMAX_NEIGHBOR`, `VL_SKIP_REF_PART`
+- `getCellListGPU` of `openfpm_pdata` doesn't fill a cell list with particle locations. Additionally, `updateCellListGPU` has to be called to perform this operation. The reason is to remove two identical fill operations in a row in simulations
+- To reorder `vector_dist` for GPU coalesced memory access dictated by the cell list structure, cell list on GPU has to be constructed with one of the following flags enabled: `CL_GPU_REORDER`, `CL_GPU_REORDER_POSITION`, `CL_GPU_REORDER_PROPERTY`, `CL_GPU_RESTORE_POSITION`, `CL_GPU_RESTORE_PROPERTY`. Properties to be copied to reordered copies of position/property vectors have to be passed to `updateCellListGPU<PROPERTIES>(CELL LIST)` of `vector_dist`. Properties that undergone changes in reordered copies and have to be restored to the original position/property vectors have to be passed to `restoreOrder<PROPERTIES>(CELL LIST)` of `vector_dist`
+
 ## OpenFPM 5.0.0 - Feb 2024
 - Move to `openfpm` meta OpenFPM project structure with git subprojects `openfpm_data`, `openfpm_devices`, `openfpm_io`, `openfpm_vcluster`, `openfpm_pdata`, `openfpm_numerics`. Example codes, installation scripts for dependencies, configuration scripts moved to `openfpm`. Only source code of `openfpm_pdata` kept in `openfpm_pdata`
 
