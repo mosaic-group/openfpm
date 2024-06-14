@@ -215,7 +215,7 @@ inline __device__ __host__ real_number Wab(real_number r)
 	if (r < 1.0)
 		return (1.0 - 3.0/2.0*r*r + 3.0/4.0*r*r*r)*a2;
 	else if (r < 2.0)
-		return (1.0/4.0*(2.0 - r*r)*(2.0 - r*r)*(2.0 - r*r))*a2;
+		return (1.0/4.0*(2.0 - r)*(2.0 - r)*(2.0 - r))*a2;
 	else
 		return 0.0;
 }
@@ -681,7 +681,6 @@ inline void sensor_pressure(Vector & vd,
 			CUDA_LAUNCH_DIM3(sensor_pressure_gpu,1,1,vd.toKernel(),NN.toKernel(),probe,(real_number *)press_tmp_.toKernel());
 
 			vd.template restoreOrder<>(NN);
-
 			// move calculated pressure on
 			press_tmp_.deviceToHost();
 			press_tmp = *(real_number *)press_tmp_.getPointer();
@@ -998,7 +997,7 @@ int main(int argc, char* argv[])
 
 	openfpm_finalize();
 }
- 
+
 #else
 
 int main(int argc, char* argv[])

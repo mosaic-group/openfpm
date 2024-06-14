@@ -303,7 +303,7 @@ inline double Wab(double r)
 	if (r < 1.0)
 		return (1.0 - 3.0/2.0*r*r + 3.0/4.0*r*r*r)*a2;
 	else if (r < 2.0)
-		return (1.0/4.0*(2.0 - r*r)*(2.0 - r*r)*(2.0 - r*r))*a2;
+		return (1.0/4.0*(2.0 - r)*(2.0 - r)*(2.0 - r))*a2;
 	else
 		return 0.0;
 }
@@ -1031,7 +1031,7 @@ int main(int argc, char* argv[])
 
 	// extended boundary around the domain, and the processor domain
 	Ghost<3,double> g(2*H);
-	
+
 	//! \cond [Initialization and parameters] \endcond
 
 	/*!
@@ -1493,4 +1493,3 @@ int main(int argc, char* argv[])
 	 *
 	 */
 }
- 
