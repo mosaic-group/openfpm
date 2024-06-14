@@ -241,7 +241,7 @@ int main(int argc, char* argv[])
 	tsim.start();
 
 	// Get the Cell list structure
-	auto NN = vd.getVerletCrs(r_gskin);;
+	auto NN = vd.getVerletCrs(r_gskin);
 
 	// calculate forces
 	calc_forces(vd,NN,sigma12,sigma6,r_cut);
@@ -290,7 +290,7 @@ int main(int argc, char* argv[])
 			vd.map();
 			vd.template ghost_get<>();
 			// Get the Cell list structure
-			vd.updateVerlet(NN,r_gskin,VL_CRS_SYMMETRIC);
+			vd.updateVerlet(NN,r_gskin);
 		}
 		else
 		{

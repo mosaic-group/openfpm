@@ -15,6 +15,7 @@ set(METIS_ROOT CACHE PATH "Metis root directory")
 set(LIBHILBERT_ROOT CACHE PATH "LibHilbert root path")
 set(HDF5_ROOT CACHE PATH "HDF5 root path")
 set(TINYOBJLOADER_ROOT CACHE PATH "TinyObjLoader library path")
+set(catalyst_DIR CACHE PATH "Catalyst library path")
 set(SE_CLASS1 CACHE BOOL "Activate compilation with SE_CLASS1")
 set(SE_CLASS2 CACHE BOOL "Activate compilation with SE_CLASS2")
 set(SE_CLASS3 CACHE BOOL "Activate compilation with SE_CLASS3")
@@ -50,6 +51,7 @@ find_package(TinyObjLoader)
 find_package(MPI REQUIRED)
 find_package(METIS)
 find_package(ParMETIS)
+find_package(catalyst 2.0)
 
 if (CUDA_ON_BACKEND STREQUAL "HIP")
 	find_package(HIP)
@@ -129,6 +131,9 @@ if(APPLE)
 endif()
 
 if (Boost_FOUND)
+	# ignore BOOST deprecated headers
+	add_definitions("-DBOOST_ALLOW_DEPRECATED_HEADERS")
+
 	if ((CUDA_ON_BACKEND STREQUAL "SEQUENTIAL" OR CUDA_ON_BACKEND STREQUAL "OpenMP") AND NOT Boost_CONTEXT_FOUND)
 		message( FATAL_ERROR "BOOST is invalid reinstalling" )
 	endif()
@@ -161,6 +166,7 @@ add_subdirectory(openfpm_pdata)
 
 if (ENABLE_NUMERICS)
 	add_subdirectory(openfpm_numerics)
+	set(DEFINE_ENABLE_NUMERICS "#define ENABLE_NUMERICS")
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config_cmake.h.in ${PROJECT_BINARY_DIR}/config/config.h)

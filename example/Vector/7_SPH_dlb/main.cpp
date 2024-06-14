@@ -303,7 +303,7 @@ inline double Wab(double r)
 	if (r < 1.0)
 		return (1.0 - 3.0/2.0*r*r + 3.0/4.0*r*r*r)*a2;
 	else if (r < 2.0)
-		return (1.0/4.0*(2.0 - r*r)*(2.0 - r*r)*(2.0 - r*r))*a2;
+		return (1.0/4.0*(2.0 - r)*(2.0 - r)*(2.0 - r))*a2;
 	else
 		return 0.0;
 }
@@ -493,7 +493,7 @@ template<typename CellList> inline void calc_forces(particles & vd, CellList & N
 		{
 			// If it is a boundary particle calculate the delta rho based on equation 2
 			// This require to run across the neighborhoods particles of a
-			auto Np = NN.getNNIterator(NN.getCell(vd.getPos(a)));
+			auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(a)));
 
 			// For each neighborhood particle
 			while (Np.isNext() == true)
@@ -548,7 +548,7 @@ template<typename CellList> inline void calc_forces(particles & vd, CellList & N
 			// If it is a fluid particle calculate based on equation 1 and 2
 
 			// Get an iterator over the neighborhood particles of p
-			auto Np = NN.getNNIterator(NN.getCell(vd.getPos(a)));
+			auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(a)));
 
 			// For each neighborhood particle
 			while (Np.isNext() == true)
@@ -936,7 +936,7 @@ inline void sensor_pressure(Vector & vd,
 			Point<3,double> xp = probes.get(i);
 
 			// get the iterator over the neighbohood particles of the probes position
-			auto itg = NN.getNNIterator(NN.getCell(probes.get(i)));
+			auto itg = NN.getNNIteratorBox(NN.getCell(probes.get(i)));
 			while (itg.isNext())
 			{
 				auto q = itg.get();
@@ -1031,7 +1031,7 @@ int main(int argc, char* argv[])
 
 	// extended boundary around the domain, and the processor domain
 	Ghost<3,double> g(2*H);
-	
+
 	//! \cond [Initialization and parameters] \endcond
 
 	/*!
@@ -1493,4 +1493,3 @@ int main(int argc, char* argv[])
 	 *
 	 */
 }
- 

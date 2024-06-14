@@ -37,7 +37,7 @@ template<typename CellList> void calc_forces(vector_dist<3,real_number, aggregat
 		vd.template getProp<force>(p)[2] = 0.0;
 
 		// Get an iterator over the neighborhood particles of p
-		auto Np = NN.getNNIterator(NN.getCell(vd.getPos(p)));
+		auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(p)));
 
 		// For each neighborhood particle ...
 		while (Np.isNext())
@@ -97,7 +97,7 @@ template<typename CellList> real_number calc_energy(vector_dist<3,real_number, a
 		Point<3,real_number> xp = vd.getPos(p);
 
 		// Get an iterator over the neighborhood of the particle p
-		auto Np = NN.getNNIterator(NN.getCell(vd.getPos(p)));
+		auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(p)));
 
 		// For each neighborhood of the particle p
 		while (Np.isNext())

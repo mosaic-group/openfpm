@@ -195,6 +195,9 @@ ${DEFINE_VCLUSTER_GARBAGE_INJECTOR}
 /* Test coverage mode */
 ${DEFINE_TEST_COVERAGE_MODE}
 
+/* Enable numerics module */
+${DEFINE_ENABLE_NUMERICS}
+
 /* when an error accur continue but avoid unsafe operation */
 /* #undef THROW_ON_ERROR */
 

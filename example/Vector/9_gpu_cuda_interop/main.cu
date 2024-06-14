@@ -124,10 +124,11 @@ Second particle property 2 component 11, address: 0x7f8d83400604
 #ifdef __NVCC__
 
 #include "Vector/vector_dist.hpp"
+#include "util/cuda_util.hpp"
 
 //! [print_data_kernel]
 
-__global__ void print_data_particle_50(float * scalar, float * vector, float * tensor, int capacity)
+__global__ void print_data_particle_50(float * scalar, float * vector, float * tensor, size_t capacity)
 {
 	int p = threadIdx.x + blockIdx.x * blockDim.x;
 
