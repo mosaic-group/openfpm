@@ -63,7 +63,11 @@ const double rdist_cutoff_factor = 2.8;
 
 // dimensions of spatial and temporal domain
 const double l = 2.44;
+#ifdef TEST_RUN
+const double t_end = 0.1;
+#else
 const double t_end = 1.0;
+#endif
 // total mass in the domain to compute individual particle masses from
 const double M = l*l*rho_0;
 // number of particles in total
@@ -89,7 +93,7 @@ template <typename CellList> inline void density_summation(particles & vd, CellL
         // intitialize sum that yields 1/(particle volume)
 	double V_inv = 0.0;
 
-        auto Np = NN.getNNIterator(NN.getCell(vd.getPos(a)));
+        auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(a)));
 	// iterate over particles b (neighboring particles)
         while (Np.isNext() == true)
         {
@@ -171,7 +175,7 @@ template<typename CellList> inline void calc_forces(particles & vd, CellList & N
         Point<2, double> va = vd.getProp<vel>(a);
 
         // Get an iterator over the neighborhood particles of p
-        auto Np = NN.getNNIterator(NN.getCell(vd.getPos(a)));
+        auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(a)));
 
         // For each neighborhood particle b
         while (Np.isNext() == true)

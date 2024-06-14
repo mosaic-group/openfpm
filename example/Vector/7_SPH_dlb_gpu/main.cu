@@ -622,7 +622,7 @@ __global__ void sensor_pressure_gpu(vector_type vd, NN_type NN, Point<3,real_num
 	Point<3,real_number> xp = probe;
 
 	// get the iterator over the neighbohood particles of the probes position
-	auto itg = NN.getNNIterator(NN.getCell(xp));
+	auto itg = NN.getNNIteratorBox(NN.getCell(xp));
 	while (itg.isNext())
 	{
 		auto q = itg.get();

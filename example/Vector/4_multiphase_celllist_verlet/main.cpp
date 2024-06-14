@@ -2,7 +2,7 @@
 #include "Vector/vector_dist.hpp"
 #include "Decomposition/CartDecomposition.hpp"
 #include "data_type/aggregate.hpp"
-#include "NN/CellList/CellListM.hpp"
+#include "NN/CellList/multiphase/CellListM.hpp"
 #include "Vector/vector_dist_multiphase_functions.hpp"
 
 /*!
@@ -529,7 +529,7 @@ int main(int argc, char* argv[])
 		current_phase.getProp<0>(p) = 0.0;
 
 		// Get an iterator of all the particles neighborhood of p
-		auto Np = CL_all.getNNIterator(CL_all.getCell(current_phase.getPos(p)));
+		auto Np = CL_all.getNNIteratorBox(CL_all.getCell(current_phase.getPos(p)));
 
 		// For each particle near p
 		while (Np.isNext())

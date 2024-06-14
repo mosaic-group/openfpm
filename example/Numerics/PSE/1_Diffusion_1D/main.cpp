@@ -69,7 +69,7 @@ template<typename CellL> double calcLap(Point<1,double> p, vect_dist_key_dx key,
 	double prp_x = vd.template getProp<0>(key);
 
 	// Get the neighborhood of the particles
-	auto NN = cl.getNNIterator(cl.getCell(p));
+	auto NN = cl.getNNIteratorBox(cl.getCell(p));
 	while(NN.isNext())
 	{
 		auto nnp = NN.get();
@@ -340,7 +340,7 @@ int main(int argc, char* argv[])
 	// on a area bigger than the domain + ghost
 	
 	// Create a Cell list with Cell spaping 8*epsilon, the CellList is created on a domain+ghost+enlarge space
-	auto cl = vd.getCellList(8*eps, CL_NON_SYMMETRIC, false, enlarge)
+	auto cl = vd.getCellList(8*eps, CL_NON_SYMMETRIC, false, enlarge);
 
 	// Maximum infinity norm
 	double linf = 0.0;

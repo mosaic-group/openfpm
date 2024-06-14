@@ -109,7 +109,7 @@ __global__ void calc_force_gpu(vector_dist_type vd, NN_type NN, real_number sigm
 
 
 	// Get an iterator over the neighborhood particles of p
-	auto Np = NN.getNNIterator(NN.getCell(vd.getPos(p)));
+	auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(p)));
 
 	// For each neighborhood particle ...
 	while (Np.isNext())
@@ -187,7 +187,7 @@ __global__ void particle_energy(vector_dist_type vd, NN_type NN, real_number sig
 	Point<3,real_number> xp = vd.getPos(p);
 
 	// Get an iterator over the neighborhood of the particle p
-	auto Np = NN.getNNIterator(NN.getCell(vd.getPos(p)));
+	auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(p)));
 
 	real_number E = 0;
 
