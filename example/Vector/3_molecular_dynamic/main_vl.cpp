@@ -62,7 +62,7 @@ constexpr int force = 1;
 
 //! \cond [arg diff] \endcond
 
-void calc_forces(vector_dist<3,double, aggregate<double[3],double[3]> > & vd, VerletList<3, double, Mem_fast<>, shift<3, double> > & NN, double sigma12, double sigma6, double r_cut)
+void calc_forces(vector_dist<3,double, aggregate<double[3],double[3]> > & vd, VerletList<3, double, VL_NON_SYMMETRIC, Mem_fast<>, shift<3, double> > & NN, double sigma12, double sigma6, double r_cut)
 {
 	//! \cond [arg diff] \endcond
 
@@ -150,7 +150,7 @@ void calc_forces(vector_dist<3,double, aggregate<double[3],double[3]> > & vd, Ve
 
 //! \cond [calc energy vl] \endcond
 
-double calc_energy(vector_dist<3,double, aggregate<double[3],double[3]> > & vd, VerletList<3, double, Mem_fast<>, shift<3, double> > & NN, double sigma12, double sigma6, double r_cut)
+double calc_energy(vector_dist<3,double, aggregate<double[3],double[3]> > & vd, VerletList<3, double, VL_NON_SYMMETRIC, Mem_fast<>, shift<3, double> > & NN, double sigma12, double sigma6, double r_cut)
 {
 	double E = 0.0;
 

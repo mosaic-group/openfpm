@@ -347,7 +347,7 @@ int main(int argc, char* argv[])
 
 	size_t cnt = 0;
 	size_t cnt_reb = 0;
-	auto nlist = parts.getVerlet<VERLETLIST_BAL(3,double)>(cutoff + skin);
+	auto nlist = parts.getVerlet<VERLET_MEMBAL<3,double,VL_NON_SYMMETRIC>>(cutoff + skin);
 
 	double tot_sp = 0.0;
 

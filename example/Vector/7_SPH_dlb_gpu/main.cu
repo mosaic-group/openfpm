@@ -210,10 +210,7 @@ inline void EqState(particles & vd)
 {
 	auto it = vd.getDomainIteratorGPU();
 
-	// You can use standard CUDA kernel launch or the macro CUDA_LAUNCH
-
-	//EqState_gpuning<<<it.wthr,it.thr>>>(vd.toKernel(),B);
-	CUDA_LAUNCH(EqState_gpu,it,vd.toKernel(),B)
+	CUDA_LAUNCH(EqState_gpu,it,vd.toKernel(),B);
 }
 
 
@@ -239,17 +236,17 @@ const real_number a2_4 = 0.25*a2;
 // Filled later
 real_number W_dap = 0.0;
 
-inline __device__ __host__ void DWab(Point<3,real_number> & dx, Point<3,real_number> & DW, real_number r, bool print)
+inline __device__ __host__ void DWab(Point<3,real_number> & dx, Point<3,real_number> & DW, real_number r)
 {
 	const real_number qq=r/H;
 
     real_number qq2 = qq * qq;
     real_number fac1 = (c1*qq + d1*qq2)/r;
-    real_number b1 = (qq < 1.0)?1.0f:0.0f;
+    real_number b1 = (qq < 1.0f)?1.0f:0.0f;
 
-    real_number wqq = (2.0 - qq);
+    real_number wqq = (2.0f - qq);
     real_number fac2 = c2 * wqq * wqq / r;
-    real_number b2 = (qq >= 1.0 && qq < 2.0)?1.0f:0.0f;
+    real_number b2 = (qq >= 1.0f && qq < 2.0f)?1.0f:0.0f;
 
     real_number factor = (b1*fac1 + b2*fac2);
 
@@ -282,8 +279,8 @@ inline __device__ __host__  real_number Tensile(real_number r, real_number rhoa,
 	//-Tensile correction.
 	real_number fab=wab*W_dap;
 	fab*=fab; fab*=fab; //fab=fab^4
-	const real_number tensilp1=(prs1/(rhoa*rhoa))*(prs1>0? 0.01: -0.2);
-	const real_number tensilp2=(prs2/(rhob*rhob))*(prs2>0? 0.01: -0.2);
+	const real_number tensilp1=(prs1/(rhoa*rhoa))*(prs1>0.0f? 0.01f: -0.2f);
+	const real_number tensilp2=(prs2/(rhob*rhob))*(prs2>0.0f? 0.01f: -0.2f);
 
 	return (fab*(tensilp1+tensilp2));
 }
@@ -304,22 +301,21 @@ inline __device__ __host__ real_number Pi(const Point<3,real_number> & dr, real_
 		return pi_visc;
     }
 	else
-		return 0.0;
+		return 0.0f;
 }
 
 template<typename particles_type, typename NN_type>
 __global__ void calc_forces_gpu(particles_type vd, NN_type NN, real_number W_dap, real_number cbar)
 {
-	// ... a
 	auto a = GET_PARTICLE(vd);
 
-	real_number max_visc = 0.0;
+	real_number max_visc = 0.0f;
 
 	// Get the position xp of the particle
 	Point<3,real_number> xa = vd.getPos(a);
 
-	// Take the mass of the particle dependently if it is FLUID or BOUNDARY
-	real_number massa = (vd.template getProp<type>(a) == FLUID)?MassFluid:MassBound;
+	// Type of the particle
+	unsigned int typea = vd.template getProp<type>(a);
 
 	// Get the density of the of the particle a
 	real_number rhoa = vd.template getProp<rho>(a);
@@ -331,122 +327,73 @@ __global__ void calc_forces_gpu(particles_type vd, NN_type NN, real_number W_dap
 	Point<3,real_number> va = vd.template getProp<velocity>(a);
 
 	// Reset the force counter (- gravity on zeta direction)
-	vd.template getProp<force>(a)[0] = 0.0;
-	vd.template getProp<force>(a)[1] = 0.0;
-	vd.template getProp<force>(a)[2] = -gravity;
-	vd.template getProp<drho>(a) = 0.0;
+	Point<3,real_number> force_;
+	force_.get(0) = 0.0f;
+	force_.get(1) = 0.0f;
+	force_.get(2) = -gravity;
+	real_number drho_ = 0.0f;
 
-	// We threat FLUID particle differently from BOUNDARY PARTICLES ...
-	if (vd.template getProp<type>(a) != FLUID)
+	// Get an iterator over the neighborhood particles of p
+	auto Np = NN.getNNIteratorBox(NN.getCell(xa));
+
+	// For each neighborhood particle
+	while (Np.isNext() == true)
 	{
+		// ... q
+		auto b = Np.get();
 
-		// If it is a boundary particle calculate the delta rho based on equation 2
-		// This require to run across the neighborhoods particles of a
-		auto Np = NN.getNNIterator(NN.getCell(vd.getPos(a)));
+		// Get the position xp of the particle
+		Point<3,real_number> xb = vd.getPos(b);
 
-		// For each neighborhood particle
-		while (Np.isNext() == true)
+		if (a == b)	{++Np; continue;};
+
+		unsigned int typeb = vd.template getProp<type>(b);
+
+		real_number massb = (typeb == FLUID)?MassFluid:MassBound;
+		Point<3,real_number> vb = vd.template getProp<velocity>(b);
+		real_number Pb = vd.template getProp<Pressure>(b);
+		real_number rhob = vd.template getProp<rho>(b);
+
+		// Get the distance between p and q
+		Point<3,real_number> dr = xa - xb;
+		// take the norm of this vector
+		real_number r2 = norm2(dr);
+
+		// if they interact
+		if (r2 < 4.0*H*H && r2 >= 1e-16)
 		{
-			// ... q
-			auto b = Np.get();
+			real_number r = sqrt(r2);
 
-			// Get the position xp of the particle
-			Point<3,real_number> xb = vd.getPos(b);
+			Point<3,real_number> v_rel = va - vb;
 
-			// if (p == q) skip this particle
-			if (a == b)	{++Np; continue;};
+			Point<3,real_number> DW;
+			DWab(dr,DW,r);
 
-			// get the mass of the particle
-			real_number massb = (vd.template getProp<type>(b) == FLUID)?MassFluid:MassBound;
+			real_number factor = - massb*((Pa + Pb) / (rhoa * rhob) + Tensile(r,rhoa,rhob,Pa,Pb,W_dap) + Pi(dr,r2,v_rel,rhoa,rhob,massb,cbar,max_visc));
 
-			// Get the velocity of the particle b
-			Point<3,real_number> vb = vd.template getProp<velocity>(b);
+			// Bound - Bound does not produce any change
+			// factor = (typea == BOUNDARY && typeb == BOUNDARY)?0.0f:factor;
+			factor = (typea != FLUID)?0.0f:factor;
 
-			// Get the pressure and density of particle b
-			real_number Pb = vd.template getProp<Pressure>(b);
-			real_number rhob = vd.template getProp<rho>(b);
+			force_.get(0) += factor * DW.get(0);
+			force_.get(1) += factor * DW.get(1);
+			force_.get(2) += factor * DW.get(2);
 
-			// Get the distance between p and q
-			Point<3,real_number> dr = xa - xb;
-			// take the norm of this vector
-			real_number r2 = norm2(dr);
+			real_number scal = massb*(v_rel.get(0)*DW.get(0)+v_rel.get(1)*DW.get(1)+v_rel.get(2)*DW.get(2));
+			scal = (typea == BOUNDARY && typeb == BOUNDARY)?0.0f:scal;
 
-			// If the particles interact ...
-			if (r2 < 4.0*H*H)
-			{
-				// ... calculate delta rho
-				real_number r = sqrt(r2);
-
-				Point<3,real_number> dv = va - vb;
-
-				Point<3,real_number> DW;
-				DWab(dr,DW,r,false);
-
-				const real_number dot = dr.get(0)*dv.get(0) + dr.get(1)*dv.get(1) + dr.get(2)*dv.get(2);
-				const real_number dot_rr2 = dot/(r2+Eta2);
-				max_visc = (dot_rr2 < max_visc)?max_visc:dot_rr2;
-
-				vd.template getProp<drho>(a) += massb*(dv.get(0)*DW.get(0)+dv.get(1)*DW.get(1)+dv.get(2)*DW.get(2));
-			}
-
-			++Np;
+			drho_ += scal;
 		}
 
-		vd.template getProp<red>(a) = max_visc;
+		++Np;
 	}
-	else
-	{
-		// If it is a fluid particle calculate based on equation 1 and 2
 
-		// Get an iterator over the neighborhood particles of p
-		auto Np = NN.getNNIterator(NN.getCell(vd.getPos(a)));
+	vd.template getProp<red>(a) = max_visc;
 
-		// For each neighborhood particle
-		while (Np.isNext() == true)
-		{
-			// ... q
-			auto b = Np.get();
-
-			// Get the position xp of the particle
-			Point<3,real_number> xb = vd.getPos(b);
-
-			// if (p == q) skip this particle
-			if (a == b)	{++Np; continue;};
-
-			real_number massb = (vd.template getProp<type>(b) == FLUID)?MassFluid:MassBound;
-			Point<3,real_number> vb = vd.template getProp<velocity>(b);
-			real_number Pb = vd.template getProp<Pressure>(b);
-			real_number rhob = vd.template getProp<rho>(b);
-
-			// Get the distance between p and q
-			Point<3,real_number> dr = xa - xb;
-			// take the norm of this vector
-			real_number r2 = norm2(dr);
-
-			// if they interact
-			if (r2 < 4.0*H*H)
-			{
-				real_number r = sqrt(r2);
-
-				Point<3,real_number> v_rel = va - vb;
-
-				Point<3,real_number> DW;
-				DWab(dr,DW,r,false);
-
-				real_number factor = - massb*((vd.template getProp<Pressure>(a) + vd.template getProp<Pressure>(b)) / (rhoa * rhob) + Tensile(r,rhoa,rhob,Pa,Pb,W_dap) + Pi(dr,r2,v_rel,rhoa,rhob,massb,cbar,max_visc));
-
-				vd.template getProp<force>(a)[0] += factor * DW.get(0);
-				vd.template getProp<force>(a)[1] += factor * DW.get(1);
-				vd.template getProp<force>(a)[2] += factor * DW.get(2);
-
-				vd.template getProp<drho>(a) += massb*(v_rel.get(0)*DW.get(0)+v_rel.get(1)*DW.get(1)+v_rel.get(2)*DW.get(2));
-			}
-
-			++Np;
-		}
-
-		vd.template getProp<red>(a) = max_visc;
-	}
+	vd.template getProp<force>(a)[0] = force_.get(0);
+	vd.template getProp<force>(a)[1] = force_.get(1);
+	vd.template getProp<force>(a)[2] = force_.get(2);
+	vd.template getProp<drho>(a) = drho_;
 }
 
 template<typename CellList> inline void calc_forces(particles & vd, CellList & NN, real_number & max_visc, size_t cnt)
@@ -454,10 +401,9 @@ template<typename CellList> inline void calc_forces(particles & vd, CellList & N
 	auto part = vd.getDomainIteratorGPU(32);
 
 	// Update the cell-list
-	vd.updateCellList(NN);
+	vd.updateCellListGPU(NN);
 
-	//calc_forces_gpu<<<part.wthr,part.thr>>>(vd.toKernel(),NN.toKernel(),W_dap,cbar);
-	CUDA_LAUNCH(calc_forces_gpu,part,vd.toKernel(),NN.toKernel(),W_dap,cbar)
+	CUDA_LAUNCH(calc_forces_gpu,part,vd.toKernel(),NN.toKernel(),W_dap,cbar);
 
 	max_visc = reduce_local<red,_max_>(vd);
 }
@@ -479,7 +425,6 @@ void max_acceleration_and_velocity(particles & vd, real_number & max_acc, real_n
 	// Calculate the maximum acceleration
 	auto part = vd.getDomainIteratorGPU();
 
-	// max_acceleration_and_velocity_gpu<<<part.wthr,part.thr>>>(vd.toKernel());
 	CUDA_LAUNCH(max_acceleration_and_velocity_gpu,part,vd.toKernel());
 
 	max_acc = reduce_local<red,_max_>(vd);
@@ -499,7 +444,7 @@ real_number calc_deltaT(particles & vd, real_number ViscDtMax)
 	max_acceleration_and_velocity(vd,Maxacc,Maxvel);
 
 	//-dt1 depends on force per unit mass.
-	const real_number dt_f = (Maxacc)?sqrt(H/Maxacc):std::numeric_limits<int>::max();
+	const real_number dt_f = (Maxacc)?sqrt(H/Maxacc):std::numeric_limits<float>::max();
 
 	//-dt2 combines the Courant and the viscous time-step controls.
 	const real_number dt_cv = H/(std::max(cbar,Maxvel*10.f) + H*ViscDtMax);
@@ -538,7 +483,7 @@ __global__ void verlet_int_gpu(vector_dist_type vd, real_number dt, real_number 
 		return;
 	}
 
-	//-Calculate displacement and update position / Calcula desplazamiento y actualiza posicion.
+	//-Calculate displacement and update position
 	real_number dx = vd.template getProp<velocity>(a)[0]*dt + vd.template getProp<force>(a)[0]*dt205;
     real_number dy = vd.template getProp<velocity>(a)[1]*dt + vd.template getProp<force>(a)[1]*dt205;
     real_number dz = vd.template getProp<velocity>(a)[2]*dt + vd.template getProp<force>(a)[2]*dt205;
@@ -558,17 +503,14 @@ __global__ void verlet_int_gpu(vector_dist_type vd, real_number dt, real_number 
 	vd.template getProp<velocity>(a)[2] = vd.template getProp<velocity_prev>(a)[2] + vd.template getProp<force>(a)[2]*dt2;
 	vd.template getProp<rho>(a) = vd.template getProp<rho_prev>(a) + dt2*vd.template getProp<drho>(a);
 
-	//! \cond [mark_to_remove_kernel] \endcond
-
     // Check if the particle go out of range in space and in density, if they do mark them to remove it later
-    if (vd.getPos(a)[0] <  0.000263878 || vd.getPos(a)[1] < 0.000263878 || vd.getPos(a)[2] < 0.000263878 ||
-        vd.getPos(a)[0] >  0.000263878+1.59947 || vd.getPos(a)[1] > 0.000263878+0.672972 || vd.getPos(a)[2] > 0.50 ||
+    if (vd.getPos(a)[0] <  0.0 || vd.getPos(a)[1] < 0.0 || vd.getPos(a)[2] < 0.0 ||
+        vd.getPos(a)[0] >  1.61 || vd.getPos(a)[1] > 0.68 || vd.getPos(a)[2] > 0.50 ||
 		vd.template getProp<rho>(a) < RhoMin || vd.template getProp<rho>(a) > RhoMax)
     {vd.template getProp<red>(a) = 1;}
     else
     {vd.template getProp<red>(a) = 0;}
 
-    //! \cond [mark_to_remove_kernel] \endcond
 
     vd.template getProp<velocity_prev>(a)[0] = velX;
     vd.template getProp<velocity_prev>(a)[1] = velY;
@@ -586,15 +528,10 @@ void verlet_int(particles & vd, real_number dt)
 	real_number dt205 = dt*dt*0.5;
 	real_number dt2 = dt*2.0;
 
-	// verlet_int_gpu<<<part.wthr,part.thr>>>(vd.toKernel(),dt,dt2,dt205);
 	CUDA_LAUNCH(verlet_int_gpu,part,vd.toKernel(),dt,dt2,dt205);
-
-	//! \cond [remove_marked_part] \endcond
 
 	// remove the particles marked
 	remove_marked<red>(vd);
-
-	//! \cond [remove_marked_part] \endcond
 
 	// increment the iteration counter
 	cnt++;
@@ -626,7 +563,7 @@ __global__ void euler_int_gpu(vector_type vd,real_number dt, real_number dt205)
 		return;
 	}
 
-	//-Calculate displacement and update position / Calcula desplazamiento y actualiza posicion.
+	//-Calculate displacement and update position
 	real_number dx = vd.template getProp<velocity>(a)[0]*dt + vd.template getProp<force>(a)[0]*dt205;
     real_number dy = vd.template getProp<velocity>(a)[1]*dt + vd.template getProp<force>(a)[1]*dt205;
     real_number dz = vd.template getProp<velocity>(a)[2]*dt + vd.template getProp<force>(a)[2]*dt205;
@@ -646,8 +583,8 @@ __global__ void euler_int_gpu(vector_type vd,real_number dt, real_number dt205)
    	vd.template getProp<rho>(a) = vd.template getProp<rho>(a) + dt*vd.template getProp<drho>(a);
 
     // Check if the particle go out of range in space and in density
-    if (vd.getPos(a)[0] <  0.000263878 || vd.getPos(a)[1] < 0.000263878 || vd.getPos(a)[2] < 0.000263878 ||
-        vd.getPos(a)[0] >  0.000263878+1.59947 || vd.getPos(a)[1] > 0.000263878+0.672972 || vd.getPos(a)[2] > 0.50 ||
+    if (vd.getPos(a)[0] <  0.0 || vd.getPos(a)[1] < 0.0 || vd.getPos(a)[2] < 0.0 ||
+        vd.getPos(a)[0] >  1.61 || vd.getPos(a)[1] > 0.68 || vd.getPos(a)[2] > 0.50 ||
 		vd.template getProp<rho>(a) < RhoMin || vd.template getProp<rho>(a) > RhoMax)
     {vd.template getProp<red>(a) = 1;}
     else
@@ -685,7 +622,7 @@ __global__ void sensor_pressure_gpu(vector_type vd, NN_type NN, Point<3,real_num
 	Point<3,real_number> xp = probe;
 
 	// get the iterator over the neighbohood particles of the probes position
-	auto itg = NN.getNNIterator(NN.getCell(xp));
+	auto itg = NN.getNNIteratorBox(NN.getCell(xp));
 	while (itg.isNext())
 	{
 		auto q = itg.get();
@@ -744,8 +681,10 @@ inline void sensor_pressure(Vector & vd,
         // if the probe is inside the processor domain
 		if (vd.getDecomposition().isLocal(probes.get(i)) == true)
 		{
-			// sensor_pressure_gpu<<<1,1>>>(vd.toKernel(),NN.toKernel(),probes.get(i),(real_number *)press_tmp_.toKernel());
-			CUDA_LAUNCH_DIM3(sensor_pressure_gpu,1,1,vd.toKernel(),NN.toKernel(),probes.get(i),(real_number *)press_tmp_.toKernel());
+			vd.updateCellListGPU(NN);
+
+			Point<3,real_number> probe = probes.get(i);
+			CUDA_LAUNCH_DIM3(sensor_pressure_gpu,1,1,vd.toKernel(),NN.toKernel(),probe,(real_number *)press_tmp_.toKernel());
 
 			// move calculated pressure on
 			press_tmp_.deviceToHost();
@@ -772,11 +711,11 @@ int main(int argc, char* argv[])
 	openfpm::vector<openfpm::vector<real_number>> press_t;
 	openfpm::vector<Point<3,real_number>> probes;
 
-	probes.add({0.8779,0.3,0.02});
-	probes.add({0.754,0.31,0.02});
+	probes.add({0.8779f,0.3f,0.02f});
+	probes.add({0.754f,0.31f,0.02f});
 
 	// Here we define our domain a 2D box with internals from 0 to 1.0 for x and y
-	Box<3,real_number> domain({-0.05,-0.05,-0.05},{1.7010,0.7065,0.5025});
+	Box<3,real_number> domain({-0.05f,-0.05f,-0.05f},{1.7010f,0.7065f,0.511f});
 	size_t sz[3] = {207,90,66};
 
 	// Fill W_dap
@@ -919,7 +858,7 @@ int main(int argc, char* argv[])
 
 	vd.ghost_get<type,rho,Pressure,velocity>(RUN_ON_DEVICE);
 
-	auto NN = vd.getCellListGPU(2*H, 2);
+	auto NN = vd.getCellListGPU(2*H, CL_NON_SYMMETRIC, 2);
 
 	timer tot_sim;
 	tot_sim.start();
@@ -932,12 +871,17 @@ int main(int argc, char* argv[])
 	{
 		Vcluster<> & v_cl = create_vcluster();
 		timer it_time;
+		it_time.start();
 
 		////// Do rebalancing every 200 timesteps
 		it_reb++;
 		if (it_reb == 300)
 		{
 			vd.map(RUN_ON_DEVICE);
+
+			// Rebalancer for now work on CPU , so move to CPU
+			vd.deviceToHostPos();
+			vd.template deviceToHostProp<type>();
 
 			it_reb = 0;
 			ModelCustom md;
@@ -985,7 +929,6 @@ int main(int argc, char* argv[])
 			// and ghost are updated
 			vd.map(RUN_ON_DEVICE);
 			vd.ghost_get<type,rho,Pressure,velocity>(RUN_ON_DEVICE);
-			vd.updateCellList(NN);
 
 			// calculate the pressure at the sensor points
 			//sensor_pressure(vd,NN,press_t,probes);

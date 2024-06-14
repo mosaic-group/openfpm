@@ -493,7 +493,7 @@ template<typename CellList> inline void calc_forces(particles & vd, CellList & N
 		{
 			// If it is a boundary particle calculate the delta rho based on equation 2
 			// This require to run across the neighborhoods particles of a
-			auto Np = NN.getNNIterator(NN.getCell(vd.getPos(a)));
+			auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(a)));
 
 			// For each neighborhood particle
 			while (Np.isNext() == true)
@@ -548,7 +548,7 @@ template<typename CellList> inline void calc_forces(particles & vd, CellList & N
 			// If it is a fluid particle calculate based on equation 1 and 2
 
 			// Get an iterator over the neighborhood particles of p
-			auto Np = NN.getNNIterator(NN.getCell(vd.getPos(a)));
+			auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(a)));
 
 			// For each neighborhood particle
 			while (Np.isNext() == true)
@@ -936,7 +936,7 @@ inline void sensor_pressure(Vector & vd,
 			Point<3,double> xp = probes.get(i);
 
 			// get the iterator over the neighbohood particles of the probes position
-			auto itg = NN.getNNIterator(NN.getCell(probes.get(i)));
+			auto itg = NN.getNNIteratorBox(NN.getCell(probes.get(i)));
 			while (itg.isNext())
 			{
 				auto q = itg.get();

@@ -415,7 +415,7 @@ template<typename VerletList> inline double calc_forces(particles & vd, VerletLi
 			////////////////////// NN2
 
 			// Get an iterator over the neighborhood particles of p
-			auto Np2 = NN2.getNNIterator(NN2.getCell(vd.getPos(a)));
+			auto Np2 = NN2.getNNIteratorBox(NN2.getCell(vd.getPos(a)));
 
 			// For each neighborhood particle
 			while (Np2.isNext() == true)
@@ -560,7 +560,7 @@ template<typename VerletList> inline double calc_forces(particles & vd, VerletLi
 			////////////////////// NN2
 
 			// Get an iterator over the neighborhood particles of p
-			auto Np2 = NN2.getNNIterator(NN2.getCell(vd.getPos(a)));
+			auto Np2 = NN2.getNNIteratorBox(NN2.getCell(vd.getPos(a)));
 
 			if (a == 0 && create_vcluster().getProcessUnitID() == 0)
 			{
@@ -1148,7 +1148,7 @@ int main(int argc, char* argv[])
 
 			vd.ghost_get<type,rho,Pressure,velocity,12>();
 
-			//vd.updateVerlet(NN,r_gskin,VL_CRS_SYMMETRIC);
+			//vd.updateVerlet(NN,r_gskin);
 			NN = vd.getVerletCrs(r_gskin);
 
 			vd.write("Debug");

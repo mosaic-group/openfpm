@@ -247,7 +247,7 @@ int main(int argc, char* argv[])
 		Point<3,float> xp = vd.getPos(p);
 
 		// Get an iterator of all the particles neighborhood of p
-		auto Np = NN.getNNIterator(NN.getCell(vd.getPos(p)));
+		auto Np = NN.getNNIteratorBox(NN.getCell(vd.getPos(p)));
 
 		// For each particle near p
 		while (Np.isNext())
@@ -392,8 +392,8 @@ int main(int argc, char* argv[])
 	//! \cond [cell_list_types] \endcond
 
 	// Get cell list
-	auto NN4 = vd.getCellList<CELL_MEMBAL(3,float)>(r_cut);
-	auto NN5 = vd.getCellList<CELL_MEMMW(3,float)>(r_cut);
+	auto NN4 = vd.getCellList<CELL_MEMBAL<3,float>>(r_cut);
+	auto NN5 = vd.getCellList<CELL_MEMMW<3,float>>(r_cut);
 
 	//! \cond [cell_list_types] \endcond
 

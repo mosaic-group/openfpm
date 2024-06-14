@@ -44,9 +44,6 @@
 #define OPENMPI
 //#define SE_CLASS1
 
-//#define USE_LOW_REGISTER_ITERATOR
-#define SCAN_WITH_CUB //<------ In case you want to use CUB for scan operations
-#define SORT_WITH_CUB
 //#define EXTERNAL_SET_GPU <----- In case you want to distribute the GPUs differently from the default
 
 #include "Vector/vector_dist.hpp"
@@ -64,7 +61,7 @@ typedef float real_number;
 #define FLUID 1
 
 // initial spacing between particles dp in the formulas
-const real_number dp = 0.00425;
+const real_number dp = 0.0085;
 // Maximum height of the fluid water
 // is going to be calculated and filled later on
 real_number h_swl = 0.0;
@@ -76,7 +73,7 @@ const real_number coeff_sound = 20.0;
 const real_number gamma_ = 7.0;
 
 // sqrt(3.0*dp*dp) support of the kernel
-const real_number H = 0.00736121593217;
+const real_number H = 0.0147224318643;
 
 // Eta in the formulas
 const real_number Eta2 = 0.01 * H*H;
@@ -90,10 +87,10 @@ const real_number visco = 0.1;
 real_number cbar = 0.0;
 
 // Mass of the fluid particles
-const real_number MassFluid = 0.0000767656;
+const real_number MassFluid = 0.000614125;
 
 // Mass of the boundary particles
-const real_number MassBound = 0.0000767656;
+const real_number MassBound = 0.000614125;
 
 //
 
@@ -303,9 +300,7 @@ inline __device__ __host__ real_number Pi(const Point<3,real_number> & dr, real_
 template<typename particles_type, typename NN_type>
 __global__ void calc_forces_gpu(particles_type vd, NN_type NN, real_number W_dap, real_number cbar)
 {
-	// ... a
 	unsigned int a;
-
 	GET_PARTICLE_SORT(a,NN);
 
 	real_number max_visc = 0.0f;
@@ -315,9 +310,6 @@ __global__ void calc_forces_gpu(particles_type vd, NN_type NN, real_number W_dap
 
 	// Type of the particle
 	unsigned int typea = vd.template getProp<type>(a);
-
-	// Take the mass of the particle dependently if it is FLUID or BOUNDARY
-	//real_number massa = (typea == FLUID)?MassFluid:MassBound;
 
 	// Get the density of the of the particle a
 	real_number rhoa = vd.template getProp<rho>(a);
@@ -349,16 +341,15 @@ __global__ void calc_forces_gpu(particles_type vd, NN_type NN, real_number W_dap
 		// if (p == q) skip this particle this condition should be done in the r^2 = 0
 		if (a == b)	{++Np; continue;};
 
-        	unsigned int typeb = vd.template getProp<type>(b);
+		unsigned int typeb = vd.template getProp<type>(b);
 
-        	real_number massb = (typeb == FLUID)?MassFluid:MassBound;
-        	Point<3,real_number> vb = vd.template getProp<velocity>(b);
-        	real_number Pb = vd.template getProp<Pressure>(b);
-        	real_number rhob = vd.template getProp<rho>(b);
+		real_number massb = (typeb == FLUID)?MassFluid:MassBound;
+		Point<3,real_number> vb = vd.template getProp<velocity>(b);
+		real_number Pb = vd.template getProp<Pressure>(b);
+		real_number rhob = vd.template getProp<rho>(b);
 
 		// Get the distance between p and q
 		Point<3,real_number> dr = xa - xb;
-		Point<3,real_number> v_rel = va - vb;
 		// take the norm of this vector
 		real_number r2 = norm2(dr);
 
@@ -366,6 +357,8 @@ __global__ void calc_forces_gpu(particles_type vd, NN_type NN, real_number W_dap
 		if (r2 < FourH2 && r2 >= 1e-16)
 		{
 			real_number r = sqrtf(r2);
+
+			Point<3,real_number> v_rel = va - vb;
 
 			Point<3,real_number> DW;
 			DWab(dr,DW,r);
@@ -401,11 +394,11 @@ template<typename CellList> inline void calc_forces(particles & vd, CellList & N
 	auto part = vd.getDomainIteratorGPU(96);
 
 	// Update the cell-list
-	vd.updateCellList(NN);
+	vd.updateCellListGPU<type,rho,Pressure,velocity>(NN);
 
-	CUDA_LAUNCH(calc_forces_gpu,part,vd.toKernel_sorted(),NN.toKernel(),W_dap,cbar);
+	CUDA_LAUNCH(calc_forces_gpu,part,vd.toKernel(),NN.toKernel(),W_dap,cbar);
 
-	vd.merge_sort<force,drho,red>(NN);
+	vd.restoreOrder<drho,force,red>(NN);
 
 	max_visc = reduce_local<red,_max_>(vd);
 }
@@ -505,7 +498,7 @@ __global__ void verlet_int_gpu(vector_dist_type vd, real_number dt, real_number 
 	vd.template getProp<velocity>(a)[2] = vd.template getProp<velocity_prev>(a)[2] + vd.template getProp<force>(a)[2]*dt2;
 	vd.template getProp<rho>(a) = vd.template getProp<rho_prev>(a) + dt2*vd.template getProp<drho>(a);
 
-    // Check if the particle go out of range in space and in density
+    // Check if the particle go out of range in space and in density, if they do mark them to remove it later
     if (vd.getPos(a)[0] <  0.0 || vd.getPos(a)[1] < 0.0 || vd.getPos(a)[2] < 0.0 ||
         vd.getPos(a)[0] >  1.61 || vd.getPos(a)[1] > 0.68 || vd.getPos(a)[2] > 0.50 ||
 		vd.template getProp<rho>(a) < RhoMin || vd.template getProp<rho>(a) > RhoMax)
@@ -565,7 +558,7 @@ __global__ void euler_int_gpu(vector_type vd,real_number dt, real_number dt205)
 		return;
 	}
 
-	//-Calculate displacement and update position / Calcula desplazamiento y actualiza posicion.
+	//-Calculate displacement and update position
 	real_number dx = vd.template getProp<velocity>(a)[0]*dt + vd.template getProp<force>(a)[0]*dt205;
     real_number dy = vd.template getProp<velocity>(a)[1]*dt + vd.template getProp<force>(a)[1]*dt205;
     real_number dz = vd.template getProp<velocity>(a)[2]*dt + vd.template getProp<force>(a)[2]*dt205;
@@ -682,8 +675,12 @@ inline void sensor_pressure(Vector & vd,
         // if the probe is inside the processor domain
 		if (vd.getDecomposition().isLocal(probes.get(i)) == true)
 		{
-			CUDA_LAUNCH_DIM3(sensor_pressure_gpu,1,1,vd.toKernel_sorted(),NN.toKernel(),probes.get(i),(real_number *)press_tmp_.toKernel());
+			vd.template updateCellListGPU<type,Pressure>(NN);
 
+			Point<3,real_number> probe = probes.get(i);
+			CUDA_LAUNCH_DIM3(sensor_pressure_gpu,1,1,vd.toKernel(),NN.toKernel(),probe,(real_number *)press_tmp_.toKernel());
+
+			vd.template restoreOrder<>(NN);
 			// move calculated pressure on
 			press_tmp_.deviceToHost();
 			press_tmp = *(real_number *)press_tmp_.getPointer();
@@ -732,7 +729,7 @@ int main(int argc, char* argv[])
 
 	// Here we define our domain a 2D box with internals from 0 to 1.0 for x and y
 	Box<3,real_number> domain({-0.05f,-0.05f,-0.05f},{1.7010f,0.7065f,0.511f});
-	size_t sz[3] = {413,179,133};
+	size_t sz[3] = {207,90,66};
 
 	// Fill W_dap
 	W_dap = 1.0/Wab(H/1.5);
@@ -874,8 +871,7 @@ int main(int argc, char* argv[])
 
 	vd.ghost_get<type,rho,Pressure,velocity>(RUN_ON_DEVICE);
 
-	auto NN = vd.getCellListGPU/*<CELLLIST_GPU_SPARSE<3,float>>*/(2*H / 2.0, 2);
-	//NN.setBoxNN(2);
+	auto NN = vd.getCellListGPU(2*H / 2.0, CL_NON_SYMMETRIC | CL_GPU_REORDER_POSITION | CL_GPU_REORDER_PROPERTY | CL_GPU_RESTORE_PROPERTY, 2);
 
 	timer tot_sim;
 	tot_sim.start();
@@ -897,8 +893,8 @@ int main(int argc, char* argv[])
 			vd.map(RUN_ON_DEVICE);
 
 			// Rebalancer for now work on CPU , so move to CPU
-            vd.deviceToHostPos();
-            vd.template deviceToHostProp<type>();
+			vd.deviceToHostPos();
+			vd.template deviceToHostProp<type>();
 
 			it_reb = 0;
 			ModelCustom md;
@@ -910,10 +906,6 @@ int main(int argc, char* argv[])
 		}
 
 		vd.map(RUN_ON_DEVICE);
-
-		// it sort the vector (doesn not seem to produce some advantage)
-		// note force calculation is anyway sorted calculation
-		//vd.make_sort(NN);
 
 		// Calculate pressure from the density
 		EqState(vd);
@@ -945,13 +937,12 @@ int main(int argc, char* argv[])
 
 		t += dt;
 
-		if (write < t*10)
+		if (write < t*100)
 		{
 			// Sensor pressure require update ghost, so we ensure that particles are distributed correctly
 			// and ghost are updated
 			vd.map(RUN_ON_DEVICE);
 			vd.ghost_get<type,rho,Pressure,velocity>(RUN_ON_DEVICE);
-			vd.updateCellList(NN);
 
 			// calculate the pressure at the sensor points
 			//sensor_pressure(vd,NN,press_t,probes);
