@@ -183,16 +183,18 @@ struct RHSFunctor
  *
  */
 //! @cond [Observer2Functor] @endcond
-template<typename DXX,typename DYY>
+template<typename DXX, typename DYY, typename VerletList_type>
 struct ObserverFunctor {
 
     DXX &Dxx;
     DYY &Dyy;
+    VerletList_type &verletList;
     int ctr;
     double t_old;
+    double rCut;
 
     //Constructor
-    ObserverFunctor(DXX &Dxx, DYY &Dyy) : Dxx(Dxx), Dyy(Dyy) {
+    ObserverFunctor(DXX &Dxx, DYY &Dyy, VerletList_type& verletList, double rCut) : Dxx(Dxx), Dyy(Dyy), verletList(verletList), rCut(rCut) {
         //a counter for counting the np. of steps
         ctr = 0;
         //Starting with t=0, we compute the step size take by t-t_old. So for the first observed step size is what we provide. Which will be 0-(-dt)=dt.
@@ -227,6 +229,7 @@ struct ObserverFunctor {
             //Updating the subset and operators based on new positions
             Particles_bulk.update();
             Particles_boundary.update();
+            Particles.updateVerlet(verletList,rCut);
             Dxx.update(Particles);
             Dyy.update(Particles);
 
@@ -363,8 +366,10 @@ int main(int argc, char *argv[])
      */
     //! @cond [DCPSE2Alias] @endcond
     //We create the DCPSE Based operators for discretization of the operators.
-    Derivative_xx Dxx(Particles, 2, rCut);
-    Derivative_yy Dyy(Particles, 2, rCut);
+    auto verletList = Particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+
+    Derivative_xx<decltype(verletList)> Dxx(Particles, verletList, 2, rCut);
+    Derivative_yy<decltype(verletList)> Dyy(Particles, verletList, 2, rCut);
     //We create aliases for referring to property and and positions.
     auto Pos = getV<PROP_POS>(Particles);
     auto C = getV<0>(Particles);
@@ -396,10 +401,10 @@ int main(int argc, char *argv[])
     boost::numeric::odeint::runge_kutta4<state_type_2d_ofp, double, state_type_2d_ofp, double, boost::numeric::odeint::vector_space_algebra_ofp> Odeint_rk4;
 
     //The method Odeint_rk4 from Odeint, requires system (a function which computes RHS of the PDE), an instance of the Compute RHS functor. We create the System with the correct types and parameteres for the operators as declared before.
-    RHSFunctor<Derivative_xx, Derivative_yy> System(Dxx, Dyy);
+    RHSFunctor<Derivative_xx<decltype(verletList)>, Derivative_yy<decltype(verletList)>> System(Dxx, Dyy);
 
     //Since we are using Odeint to control the time steps, we also create a observer instance. Which also updates the position via an euler step for moving thr particles.
-    ObserverFunctor<Derivative_xx, Derivative_yy> ObserveAndUpdate(Dxx, Dyy);
+    ObserverFunctor<Derivative_xx<decltype(verletList)>, Derivative_yy<decltype(verletList)>, decltype(verletList)> ObserveAndUpdate(Dxx, Dyy, verletList, rCut);
 
 
     //Furhter, odeint needs data in a state type "state_type_2d_ofp", we create one and fill in the initial condition.

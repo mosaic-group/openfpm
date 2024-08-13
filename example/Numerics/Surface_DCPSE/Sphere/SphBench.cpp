@@ -142,9 +142,11 @@ int main(int argc, char * argv[]) {
   auto f=getV<F>(particles);
   tt.start();
   tt3.start();
-  SurfaceDerivative_xx<NORMAL> Sdxx{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_yy<NORMAL> Sdyy{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_zz<NORMAL> Sdzz{particles,ord,rCut,grid_spacing_surf};
+
+  auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+  SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
   tt3.stop();
   tt2.start();
   particles.ghost_get<F>();
@@ -186,6 +188,7 @@ int main(int argc, char * argv[]) {
   particles.write(p_output,BINARY);
   Sdxx.deallocate(particles);
   Sdyy.deallocate(particles);
+  Sdzz.deallocate(particles);
   tt4.stop();
   double Ftcpu=tt4.getcputime(),Ftwall=tt.getwct();
   v_cl.sum(Ftcpu);

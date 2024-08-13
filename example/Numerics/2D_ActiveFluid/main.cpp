@@ -235,7 +235,16 @@ struct PolarEv
  */
 //! @cond [ActiveObserver2Functor] @endcond
 // Functor to calculate velocity and move particles with explicit euler
-template<typename DX,typename DY,typename DXX,typename DXY,typename DYY>
+template<
+    typename DX,
+    typename DY,
+    typename DX_BULK,
+    typename DY_BULK,
+    typename DXX,
+    typename DXY,
+    typename DYY,
+    typename verletList_type,
+    typename verletListBulk_type>
 struct CalcVelocity
 {
 
@@ -244,12 +253,36 @@ struct CalcVelocity
     DXX &Dxx;
     DXY &Dxy;
     DYY &Dyy;
+    verletList_type& verletList;
+    verletListBulk_type& verletList_bulk;
 
     double t_old;
+    double rCut;
     int ctr;
 
     //Constructor
-    CalcVelocity(DX &Dx,DY &Dy,DXX &Dxx,DXY &Dxy,DYY &Dyy,DX &Bulk_Dx,DY &Bulk_Dy):Dx(Dx),Dy(Dy),Dxx(Dxx),Dxy(Dxy),Dyy(Dyy),Bulk_Dx(Bulk_Dx),Bulk_Dy(Bulk_Dy)
+    CalcVelocity(
+        DX &Dx,
+        DY &Dy,
+        DXX &Dxx,
+        DXY &Dxy,
+        DYY &Dyy,
+        DX_BULK &Bulk_Dx,
+        DY_BULK &Bulk_Dy,
+        verletList_type& verletList,
+        verletListBulk_type& verletList_bulk,
+        double rCut
+    ):
+        Dx(Dx),
+        Dy(Dy),
+        Dxx(Dxx),
+        Dxy(Dxy),
+        Dyy(Dyy),
+        Bulk_Dx(Bulk_Dx),
+        Bulk_Dy(Bulk_Dy),
+        verletList(verletList),
+        verletList_bulk(verletList_bulk),
+        rCut(rCut)
     {
         t_old = 0.0;
         ctr = 0;
@@ -284,6 +317,8 @@ struct CalcVelocity
             Particles_bulk.update();
             Particles_boundary.update();
             tt.start();
+            Particles.updateVerlet(verletList,rCut);
+            Particles_bulk.updateVerlet(verletList_bulk,rCut);
             Dx.update(Particles);
             Dy.update(Particles);
             Dxy.update(Particles);
@@ -663,12 +698,18 @@ int main(int argc, char* argv[])
         auto RHS_bulk = getV<VRHS>(Particles_bulk);
         auto div_bulk = getV<DIV>(Particles_bulk);
 
-        Derivative_x Dx(Particles,ord,rCut), Bulk_Dx(Particles_bulk,ord,rCut);
-        Derivative_y Dy(Particles, ord, rCut), Bulk_Dy(Particles_bulk, ord,rCut);
-        Derivative_xy Dxy(Particles, ord, rCut);
+        auto verletList = Particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+        auto verletList_bulk = Particles_bulk.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+
+        Derivative_x<decltype(verletList)> Dx(Particles, verletList, ord,rCut);
+        Derivative_y<decltype(verletList)> Dy(Particles, verletList, ord, rCut);
+        Derivative_xy<decltype(verletList)> Dxy(Particles, verletList, ord, rCut);
+
+        Derivative_x<decltype(verletList_bulk)> Bulk_Dx(Particles, Particles_bulk, verletList_bulk, ord, rCut);
+        Derivative_y<decltype(verletList_bulk)> Bulk_Dy(Particles, Particles_bulk, verletList_bulk, ord, rCut);
         auto Dyx = Dxy;
-        Derivative_xx Dxx(Particles, ord, rCut);
-        Derivative_yy Dyy(Particles, ord, rCut);
+        Derivative_xx<decltype(verletList)> Dxx(Particles, verletList, ord, rCut);
+        Derivative_yy<decltype(verletList)> Dyy(Particles, verletList, ord, rCut);
 
         boost::numeric::odeint::runge_kutta4< state_type_2d_ofp,double,state_type_2d_ofp,double,boost::numeric::odeint::vector_space_algebra_ofp> rk4;
 
@@ -676,8 +717,25 @@ int main(int argc, char* argv[])
         vectorGlobal_bulk=(void *) &Particles_bulk;
         vectorGlobal_boundary=(void *) &Particles_boundary;
 
-        PolarEv<Derivative_x,Derivative_y,Derivative_xx,Derivative_xy,Derivative_yy> System(Dx,Dy,Dxx,Dxy,Dyy);
-        CalcVelocity<Derivative_x,Derivative_y,Derivative_xx,Derivative_xy,Derivative_yy> CalcVelocityObserver(Dx,Dy,Dxx,Dxy,Dyy,Bulk_Dx,Bulk_Dy);
+        PolarEv<
+            Derivative_x<decltype(verletList)>,
+            Derivative_y<decltype(verletList)>,
+            Derivative_xx<decltype(verletList)>,
+            Derivative_xy<decltype(verletList)>,
+            Derivative_yy<decltype(verletList)>>
+        System(Dx,Dy,Dxx,Dxy,Dyy);
+
+        CalcVelocity<
+            Derivative_x<decltype(verletList)>,
+            Derivative_y<decltype(verletList)>,
+            Derivative_x<decltype(verletList_bulk)>,
+            Derivative_y<decltype(verletList_bulk)>,
+            Derivative_xx<decltype(verletList)>,
+            Derivative_xy<decltype(verletList)>,
+            Derivative_yy<decltype(verletList)>,
+            decltype(verletList),
+            decltype(verletList_bulk)>
+        CalcVelocityObserver(Dx,Dy,Dxx,Dxy,Dyy,Bulk_Dx,Bulk_Dy,verletList,verletList_bulk,rCut);
 
         state_type_2d_ofp tPol;
         tPol.data.get<0>()=Pol[x];

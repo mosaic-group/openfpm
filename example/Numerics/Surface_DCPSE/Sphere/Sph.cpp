@@ -191,9 +191,11 @@ int main(int argc, char * argv[]) {
   auto Df=getV<DF>(particles);
   auto f=getV<F>(particles);
 
-  SurfaceDerivative_xx<NORMAL> Sdxx{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_yy<NORMAL> Sdyy{particles,ord,rCut,grid_spacing_surf};
-  SurfaceDerivative_zz<NORMAL> Sdzz{particles,ord,rCut,grid_spacing_surf};
+  auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+
+  SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
 
   DErr=(Sdxx(Af)+Sdyy(Af)+Sdzz(Af))-f;
   particles.deleteGhost();
@@ -229,6 +231,7 @@ int main(int argc, char * argv[]) {
   particles.write(p_output,BINARY);
   Sdxx.deallocate(particles);
   Sdyy.deallocate(particles);
+  Sdzz.deallocate(particles);
 
   tt.stop();
   if (v_cl.rank() == 0)

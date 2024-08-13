@@ -96,6 +96,7 @@ int main(int argc, char * argv[]) {
 
   particles.map();
   particles.ghost_get<F>();
+  particles.ghost_get_subset();
 
   vector_dist_subset<3,double,prop> particles_bulk(particles,0);
   vector_dist_subset<3,double,prop> particles_boundary(particles,1);
@@ -108,13 +109,14 @@ int main(int argc, char * argv[]) {
   auto f=getV<F>(particles);
   auto N=getV<NORMAL>(particles);
 
-  SurfaceDerivative_x<NORMAL> Sdx{particles,2,rCut,grid_spacing_surf};
-  SurfaceDerivative_y<NORMAL> Sdy{particles,2,rCut,grid_spacing_surf};
-  SurfaceDerivative_z<NORMAL> Sdz{particles,2,rCut,grid_spacing_surf};
+  auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+  SurfaceDerivative_x<NORMAL,decltype(verletList)> Sdx{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_y<NORMAL,decltype(verletList)> Sdy{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_z<NORMAL,decltype(verletList)> Sdz{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
 
-  SurfaceDerivative_xx<NORMAL> Sdxx{particles,2,rCut,grid_spacing_surf};
-  SurfaceDerivative_yy<NORMAL> Sdyy{particles,2,rCut,grid_spacing_surf};
-  SurfaceDerivative_zz<NORMAL> Sdzz{particles,2,rCut,grid_spacing_surf};
+  SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
 
   DErr=-0.5*(Sdx(N[0])+Sdy(N[1])+Sdz(N[2]));
   particles.deleteGhost();
@@ -128,8 +130,12 @@ int main(int argc, char * argv[]) {
   Solver.solve(f);
   particles.deleteGhost();
   particles.write(p_output,BINARY);
-  Sdxx.deallocate(particles);
+  Sdzz.deallocate(particles);
   Sdyy.deallocate(particles);
+  Sdxx.deallocate(particles);
+  Sdz.deallocate(particles);
+  Sdy.deallocate(particles);
+  Sdx.deallocate(particles);
 
   tt.stop();
   if (v_cl.rank() == 0)

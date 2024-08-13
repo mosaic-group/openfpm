@@ -117,10 +117,11 @@ int main(int argc, char * argv[]) {
   auto & bulk=particles_bulk.getIds();
   auto & boundary=particles_boundary.getIds();
 
+  auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
   //SurfaceDerivative_x<NORMAL> Sdx(particles, 2, rCut,grid_spacing);
   //SurfaceDerivative_y<NORMAL> Sdy(particles, 2, rCut,grid_spacing);
-  SurfaceDerivative_xx<NORMAL> Sdxx(particles, ord, rCut,grid_spacing);
-  SurfaceDerivative_yy<NORMAL> Sdyy(particles, ord, rCut,grid_spacing);
+  SurfaceDerivative_xx<NORMAL, decltype(verletList)> Sdxx(particles, verletList, ord, rCut, grid_spacing, rCut/grid_spacing);
+  SurfaceDerivative_yy<NORMAL, decltype(verletList)> Sdyy(particles, verletList, ord, rCut, grid_spacing, rCut/grid_spacing);
   //SurfaceDerivative_xy<NORMAL> Sdxy(particles, 2, rCut,grid_spacing);
 
   auto f=getV<F>(particles);

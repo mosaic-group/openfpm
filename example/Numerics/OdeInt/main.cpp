@@ -293,8 +293,9 @@ int main(int argc, char* argv[]) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //! @cond [DCPSE1Alias] @endcond
     //We create the DCPSE Based operators for discretization of the operators.
-    Derivative_xx Dxx(Particles, 2, rCut);
-    Derivative_yy Dyy(Particles, 2, rCut);
+    auto verletList = Particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+    Derivative_xx<decltype(verletList)> Dxx(Particles, verletList, 2, rCut);
+    Derivative_yy<decltype(verletList)> Dyy(Particles, verletList, 2, rCut);
     //We create aliases for referring to property and and positions.
     auto Pos = getV<PROP_POS>(Particles);
     auto C = getV<0>(Particles);
@@ -328,7 +329,7 @@ int main(int argc, char* argv[]) {
     boost::numeric::odeint::runge_kutta4<state_type_2d_ofp, double, state_type_2d_ofp, double, boost::numeric::odeint::vector_space_algebra_ofp> Odeint_rk4;
 
     //The method Odeint_rk4 from Odeint, requires system (a function which computes RHS of the PDE), an instance of the Compute RHS functor. We create the System with the correct types and parameteres for the operators as declared before.
-    RHSFunctor<Derivative_xx, Derivative_yy> System(Dxx, Dyy);
+    RHSFunctor<Derivative_xx<decltype(verletList)>, Derivative_yy<decltype(verletList)>> System(Dxx, Dyy);
 
     //Furhter, odeint needs data in a state type "state_type_2d_ofp", we create one and fill in the initial condition.
     state_type_2d_ofp X;
@@ -384,6 +385,7 @@ int main(int argc, char* argv[]) {
         //We update the subset and operators as the particles moved.
         Particles_bulk.update();
         Particles_boundary.update();
+        Particles.updateVerlet(verletList,rCut);
         Dxx.update(Particles);
         Dyy.update(Particles);
         //Reinitialzing as distributed size can change.

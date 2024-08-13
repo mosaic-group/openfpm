@@ -280,6 +280,7 @@ int main(int argc, char * argv[]) {
 
   particles.map();
   particles.ghost_get<CONC>();
+  particles.ghost_get_subset();
   particles.write("Init",BINARY);
   vector_dist_subset<3,double,prop> particles_bulk(particles,0);
   vector_dist_subset<3,double,prop> particles_boundary(particles,1);
@@ -299,11 +300,12 @@ int main(int argc, char * argv[]) {
         }
         else
         {
-            opt=support_options::ADAPTIVE_SURFACE;              
+            opt=support_options::ADAPTIVE;
         }
-        SurfaceDerivative_xx<NORMAL> Sdxx{particles,2,rCut,SCF,opt};
-        SurfaceDerivative_yy<NORMAL> Sdyy{particles,2,rCut,SCF,opt};
-        SurfaceDerivative_zz<NORMAL> Sdzz{particles,2,rCut,SCF,opt};
+        auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+        SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx{particles,verletList,2,rCut,SCF,rCut/SCF,opt};
+        SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy{particles,verletList,2,rCut,SCF,rCut/SCF,opt};
+        SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz{particles,verletList,2,rCut,SCF,rCut/SCF,opt};
         if(DCPSE_LOAD){
             Sdxx.load(particles,"DCPSE/Dxx");
             Sdyy.load(particles,"DCPSE/Dyy");
@@ -323,9 +325,9 @@ int main(int argc, char * argv[]) {
             Point<3,double> xp=particles.getPos(p);
             if(xp.distance(0)<1e-2)
             {
-            Sdxx.DrawKernel<CONC,vector_type>(particles,p);
-            Sdyy.DrawKernel<COLD,vector_type>(particles,p);
-            Sdzz.DrawKernel<DCONC,vector_type>(particles,p);
+            Sdxx.DrawKernel<CONC,vector_type>(p);
+            Sdyy.DrawKernel<COLD,vector_type>(p);
+            Sdzz.DrawKernel<DCONC,vector_type>(p);
             particles.write_frame("Kernel",p);
             DC=0;
             C=0;
@@ -339,7 +341,7 @@ int main(int argc, char * argv[]) {
   PointerGlobal = (void *) &particles;
   Pointer2Bulk = (void *) &particles_bulk;
   Pointer2Boundary = (void *) &particles_boundary;
-  RHSFunctor<SurfaceDerivative_xx<NORMAL>, SurfaceDerivative_yy<NORMAL>,SurfaceDerivative_zz<NORMAL>> System(Sdxx,Sdyy,Sdzz);
+  RHSFunctor<SurfaceDerivative_xx<NORMAL,decltype(verletList)>, SurfaceDerivative_yy<NORMAL,decltype(verletList)>,SurfaceDerivative_zz<NORMAL,decltype(verletList)>> System(Sdxx,Sdyy,Sdzz);
   ObserverFunctor Obs;
   state_type_1d_ofp X;
   X.data.get<0>() = C;
