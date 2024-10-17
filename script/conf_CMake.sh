@@ -166,5 +166,5 @@ elif [ -d "$i_dir/CATALYST/lib64" ]; then
   configure_options=" $configure_options -Dcatalyst_DIR=$prefix_dependencies/CATALYST/lib64/cmake/catalyst-2.0 "
 fi
 
-echo "CXX=mpic++ DYLD_LIBRARY_PATH=$ld_lib_pathopt cmake ../. $configure_options"
-printf "CXX=mpic++ DYLD_LIBRARY_PATH=$ld_lib_pathopt cmake ../. $configure_options" > cmake_build_options
+echo "CC=mpicc CXX=mpic++ DYLD_LIBRARY_PATH=$ld_lib_pathopt cmake ../. $configure_options"
+printf "CC=mpicc CXX=mpic++ DYLD_LIBRARY_PATH=$ld_lib_pathopt cmake ../. $configure_options" > cmake_build_options
