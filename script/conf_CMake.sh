@@ -160,6 +160,10 @@ if [ -d "$prefix_dependencies/EIGEN" ]; then
     configure_options=" $configure_options -DEIGEN3_ROOT=$prefix_dependencies/EIGEN "
 fi
 
+if [ -d "$prefix_dependencies/MINTER" ]; then
+    configure_options=" $configure_options -DMINTER_ROOT=$prefix_dependencies/MINTER "
+fi
+
 if [ -d "$i_dir/CATALYST/lib" ]; then
   configure_options=" $configure_options -Dcatalyst_DIR=$prefix_dependencies/CATALYST/lib/cmake/catalyst-2.0 "
 elif [ -d "$i_dir/CATALYST/lib64" ]; then

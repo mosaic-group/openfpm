@@ -50,6 +50,10 @@ if [ -d "$prefix_dependencies/EIGEN" ]; then
     lin_alg_inc="$lin_alg_inc -I$prefix_dependencies/EIGEN"
 fi
 
+if [ -d "$prefix_dependencies/MINTER" ]; then
+    lin_alg_inc="$lin_alg_inc -I$prefix_dependencies/MINTER"
+fi
+
 if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux" ]]; then
     lin_alg_lib="$lin_alg_lib -lrt"
 fi
