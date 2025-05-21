@@ -56,7 +56,6 @@ README
 **/src/Makefile
 ./Makefile
 Makefile.in
-Makefile
 config.status
 configure
 numerics
