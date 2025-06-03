@@ -1,11 +1,11 @@
 /*!
- * \page Numerics expression SPH Dam break simulation with Dynamic load balacing
+ * \page Numerics Odeint SPH Dam break simulation with Dynamic load balacing
  *
  *
  * [TOC]
  *
  *
- * # Numerics expression SPH Dam break simulation with Dynamic load balacing # {#SPH_dlb}
+ * # SPH with Dynamic load Balancing # {#SPH_dlb}
  *
  *
  * This example show the classical SPH Dam break simulation with Load Balancing and Dynamic load balancing. With
@@ -47,13 +47,13 @@
  * <img src="http://ppmcore.mpi-cbg.de/web/images/examples/7_SPH_dlb/dam_break_all.jpg"/>
  * \endhtmlonly
  *
- * ## Inclusion ## {#sph_expression_inclusion}
+ * ## Inclusion ## {#sph_odeint_inclusion}
  *
  * In order to use distributed vectors in our code we have to include the file Vector/vector_dist.hpp
  * we also include DrawParticles that has nice utilities to draw particles in parallel accordingly
  * to simple shapes
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp inclusion
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp inclusion
  *
  */
 
@@ -63,21 +63,23 @@
 //! \cond [inclusion] \endcond
 #include "Vector/vector_dist.hpp"
 #include "Operators/Vector/vector_dist_operators.hpp"
+#include "Vector/vector_dist_subset.hpp"
+#include "OdeIntegrators/OdeIntegrators.hpp"
 #include "Draw/DrawParticles.hpp"
 
 #include <math.h>
 //! \cond [inclusion] \endcond
 
 /*!
- * \page SPH_dlb Numerics expression SPH Dam break simulation with Dynamic load balacing
+ * \page Numerics Odeint SPH Dam break simulation with Dynamic load balacing
  *
- * ## SPH simulation {#sph_expression_parameters}
+ * ## SPH simulation {#sph_odeint_parameters}
  *
  * The SPH formulation used in this example code follow these equations
  *
- * \f$\frac{dv_a}{dt} = - \sum_{b = NN(a) } m_b \left(\frac{P_a + P_b}{\rho_a \rho_b} + \Pi_{ab} \right) \nabla_{a} W_{ab} + g  \tag{1} \f$
+ * \f$\frac{dv_a}{dt} = - \sum_{b = cellList(a) } m_b \left(\frac{P_a + P_b}{\rho_a \rho_b} + \Pi_{ab} \right) \nabla_{a} W_{ab} + g  \tag{1} \f$
  *
- * \f$\frac{d\rho_a}{dt} =  \sum_{b = NN(a) } m_b v_{ab} \cdot \nabla_{a} W_{ab} \tag{2} \f$
+ * \f$\frac{d\rho_a}{dt} =  \sum_{b = cellList(a) } m_b v_{ab} \cdot \nabla_{a} W_{ab} \tag{2} \f$
  *
  * \f$ P_a = b \left[ \left( \frac{\rho_a}{\rho_{0}} \right)^{\gamma} - 1 \right] \tag{3} \f$
  *
@@ -101,12 +103,12 @@
  * used by Dual-SPH (http://www.dual.sphysics.org/). A summary of the equation and constants can be founded in
  * their User Manual and the XML user Manual.
  *
- * ### Parameters {#sph_expression_parameters}
+ * ### Parameters {#sph_odeint_parameters}
  *
  * Based on the equation
  * reported before several constants must be defined.
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp sim parameters
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp sim parameters
  *
  */
 
@@ -224,6 +226,14 @@ typedef aggregate<size_t, double,  double,    double,     double,     double[3],
 //                type   density   density    Pressure    delta       force     velocity    velocity   density  velocity
 //                                 at n-1                 density                           at n - 1
 typedef vector_dist<3,double,property_type> vector_dist_type;
+// typedef vector_dist_ws<3,double,property_type> vector_dist_type;
+typedef vector_dist_subset<3, double, property_type> vector_dist_subset_type;
+
+// global variable dt to be accessible in RHSFunctor
+double dt;
+
+// global iteration variable to be accessible in RHSFunctor
+size_t iteration;
 
 /*! \cond [vector_dist_def] \endcond */
 
@@ -232,9 +242,9 @@ typedef vector_dist<3,double,property_type> vector_dist_type;
 struct ModelCustom
 {
 	template<typename Decomposition, typename vector> inline void addComputation(Decomposition & dec,
-		vector & vectorDist,
-		size_t v,
-		size_t p)
+			                                                                     vector & vectorDist,
+																				 size_t v,
+																				 size_t p)
 	{
 		if (vectorDist.template getProp<TYPE>(p) == FLUID)
 			dec.addComputationCost(v,4);
@@ -256,14 +266,14 @@ struct ModelCustom
 /*! \cond [model custom] \endcond */
 
 /*!
- * \page SPH_dlb Numerics expression SPH Dam break simulation with Dynamic load balacing
+ * \page Numerics Odeint SPH Dam break simulation with Dynamic load balacing
  *
- * ### Equation of state {#sph_expression_equation_state}
+ * ### Equation of state {#sph_odeint_equation_state}
  *
  * This function implement the formula 3 in the set of equations. It calculate the
  * pressure of each particle based on the local density of each particle.
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp eq_state_and_ker
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp eq_state_and_ker
  *
  */
 
@@ -290,16 +300,16 @@ inline void EqState(vector_dist_type & vectorDist)
 /*! \cond [eq_state_and_ker] \endcond */
 
 /*!
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
- * ### Cubic SPH kernel and derivatives {#sph_expression_kernel}
+ * ### Cubic SPH kernel and derivatives {#sph_odeint_kernel}
  *
  * This function define the Cubic kernel or \f$ W_{ab} \f$. The cubic kernel is
  * defined as
  *
  * \f$ \begin{cases} 1.0 - \frac{3}{2} q^2 + \frac{3}{4} q^3 & 0 < q < 1 \\ (2 - q)^3 & 1 < q < 2 \\ 0 & q > 2 \end{cases} \f$
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp kernel_sph
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp kernel_sph
  *
  */
 
@@ -322,7 +332,7 @@ inline double Wab(double r)
 /*! \cond [kernel_sph] \endcond */
 
 /*!
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
  * This function define the gradient of the Cubic kernel function \f$ W_{ab} \f$.
  *
@@ -330,7 +340,7 @@ inline double Wab(double r)
  *
  * \f$ \beta = \begin{cases} (c_1 q + d_1 q^2) & 0 < q < 1 \\ c_2 (2 - q)^2  & 1 < q < 2 \end{cases} \f$
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp kernel_sph_der
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp kernel_sph_der
  *
  */
 
@@ -347,27 +357,27 @@ inline void DWab(Point<3,double> & dx, Point<3,double> & DW, double r, bool prin
 {
 	const double qq=r/H;
 
-	double qq2 = qq * qq;
-	double fac1 = (c1*qq + d1*qq2)/r;
-	double b1 = (qq < 1.0)?1.0f:0.0f;
+    double qq2 = qq * qq;
+    double fac1 = (c1*qq + d1*qq2)/r;
+    double b1 = (qq < 1.0)?1.0f:0.0f;
 
-	double wqq = (2.0 - qq);
-	double fac2 = c2 * wqq * wqq / r;
-	double b2 = (qq >= 1.0 && qq < 2.0)?1.0f:0.0f;
+    double wqq = (2.0 - qq);
+    double fac2 = c2 * wqq * wqq / r;
+    double b2 = (qq >= 1.0 && qq < 2.0)?1.0f:0.0f;
 
-	double factor = (b1*fac1 + b2*fac2);
+    double factor = (b1*fac1 + b2*fac2);
 
-	DW.get(0) = factor * dx.get(0);
-	DW.get(1) = factor * dx.get(1);
-	DW.get(2) = factor * dx.get(2);
+    DW.get(0) = factor * dx.get(0);
+    DW.get(1) = factor * dx.get(1);
+    DW.get(2) = factor * dx.get(2);
 }
 
 /*! \cond [kernel_sph_der] \endcond */
 
 /*!
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
- * ### Tensile correction {#sph_expression_tensile}
+ * ### Tensile correction {#sph_odeint_tensile}
  *
  * This function define the Tensile term. An explanation of the Tensile term is out of the
  * context of this tutorial, but in brief is an additional repulsive term that avoid the particles
@@ -375,7 +385,7 @@ inline void DWab(Point<3,double> & dx, Point<3,double> & DW, double r, bool prin
  * particles to get too close like the Lennard-Jhonned potential at atomistic level. A good
  * reference is the Monaghan paper "SPH without a Tensile Instability"
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp tensile_term
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp tensile_term
  *
  *
  */
@@ -397,10 +407,10 @@ inline double Tensile(double r, double rhoa, double rhob, double prs1, double pr
 	}
 	else
 	{
-		double wqq2=qq*qq;
-		double wqq3=wqq2*qq;
+	    double wqq2=qq*qq;
+	    double wqq3=wqq2*qq;
 
-		wab=a2*(1.0f-1.5f*wqq2+0.75f*wqq3);
+	    wab=a2*(1.0f-1.5f*wqq2+0.75f*wqq3);
 	}
 
 	//-Tensile correction.
@@ -417,13 +427,13 @@ inline double Tensile(double r, double rhoa, double rhob, double prs1, double pr
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
- * ### Viscous term {#sph_expression_viscous}
+ * ### Viscous term {#sph_odeint_viscous}
  *
  * This function implement the viscous term \f$ \Pi_{ab} \f$
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp viscous_term
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp viscous_term
  *
  *
  */
@@ -443,7 +453,7 @@ inline double Pi(const Point<3,double> & dr, double rr2, Point<3,double> & dv, d
 		const float pi_visc=(-visco*cbar*amubar/robar);
 
 		return pi_visc;
-	}
+    }
 	else
 		return 0.0;
 }
@@ -452,25 +462,25 @@ inline double Pi(const Point<3,double> & dr, double rr2, Point<3,double> & dv, d
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
  * ### Force calculation {#e7_force_calc}
  *
  * Calculate forces. It calculate equation 1 and 2 in the set of formulas
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp calc_forces
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp calc_forces
  *
  *
  */
 
 /*! \cond [calc_forces] \endcond */
 
-template<typename CellList> inline void calc_forces(vector_dist_type & vectorDist, CellList & NN, double & max_visc)
+template<typename CellList> inline void calc_forces(vector_dist_type & vectorDist, CellList & cellList, double & max_visc)
 {
 	auto part = vectorDist.getDomainIterator();
 
 	// Update the cell-list
-	vectorDist.updateCellList(NN);
+	vectorDist.updateCellList(cellList);
 
 	// For each particle ...
 	while (part.isNext())
@@ -504,7 +514,7 @@ template<typename CellList> inline void calc_forces(vector_dist_type & vectorDis
 		{
 			// If it is a boundary particle calculate the delta rho based on equation 2
 			// This require to run across the neighborhoods particles of a
-			auto Np = NN.getNNIteratorBox(NN.getCell(vectorDist.getPos(a)));
+			auto Np = cellList.getNNIteratorBox(cellList.getCell(vectorDist.getPos(a)));
 
 			// For each neighborhood particle
 			while (Np.isNext() == true)
@@ -559,7 +569,7 @@ template<typename CellList> inline void calc_forces(vector_dist_type & vectorDis
 			// If it is a fluid particle calculate based on equation 1 and 2
 
 			// Get an iterator over the neighborhood particles of p
-			auto Np = NN.getNNIteratorBox(NN.getCell(vectorDist.getPos(a)));
+			auto Np = cellList.getNNIteratorBox(cellList.getCell(vectorDist.getPos(a)));
 
 			// For each neighborhood particle
 			while (Np.isNext() == true)
@@ -614,14 +624,14 @@ template<typename CellList> inline void calc_forces(vector_dist_type & vectorDis
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
  * ### Integration and dynamic time integration {#e7_delta_time_t}
  *
  * This function calculate the Maximum acceleration and velocity across the particles.
  * It is used to calculate a dynamic time-stepping.
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp max_acc_vel
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp max_acc_vel
  *
  *
  */
@@ -664,7 +674,7 @@ void max_acceleration_and_velocity(vector_dist_type & vectorDist, double & max_a
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
  * In this example we are using Dynamic time-stepping. The Dynamic time stepping is
  * calculated with the Courant-Friedrich-Lewy condition. See Monaghan 1992 "Smoothed Particle Hydrodynamic"
@@ -678,7 +688,7 @@ void max_acceleration_and_velocity(vector_dist_type & vectorDist, double & max_a
  * \f$  \delta t_{cv} = min \frac{h}{c_s + max \left| \frac{hv_{ab} \cdot r_{ab}}{r_{ab}^2} \right|} \f$
  *
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp dyn_stepping
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp dyn_stepping
  *
  *
  */
@@ -705,11 +715,96 @@ double calc_deltaT(vector_dist_type & vectorDist, double ViscDtMax)
 	return dt;
 }
 
+/**
+ * @page Odeint_single_step Step by step time integration with Odeint
+ *
+ * ## Creating the RHS Functor## {#ode_c1_rhs}
+ *
+ * Odeint works with certain specific state_types.
+ * We offer certain state types such as 'state_type_7d_ofp' for making openfpm work with odeint.
+ *
+ *
+ * Now we create the RHS functor. Please refer to ODE_int for more detials.
+ *
+ * All RHS computations  needs to happen in the operator ().
+ * Odeint expects the arguments here to be an input state_type X, an output state_tyoe dxdt and time t.
+ * We pass on the openfpm distributed state types as
+ * void operator()( const state_type_7d_ofp &X , state_type_7d_ofp &dxdt , const double t ) const
+ *
+ *
+ * @snippet example/Numerics/OdeInt/main.cpp RHS1Functor
+ *
+ */
+
+
+//! @cond [RHS1Functor] @endcond
+template<typename vector_dist_type, typename CellList_type>
+struct RHSFunctor
+{
+    CellList_type &cellList;
+    vector_dist_type &vectorDist;
+
+    //Constructor
+    RHSFunctor(vector_dist_type &vectorDist, CellList_type &cellList) :
+    	cellList(cellList),
+		vectorDist(vectorDist)
+    {}
+
+    void operator()( state_type_7d_ofp &X , state_type_7d_ofp &dxdt , const double t)
+    {
+    	double dt05 = dt*0.5;
+    	double dt2 = dt*2.0;
+
+	    auto posExpression = getV<POS_PROP>(vectorDist);
+	    auto forceExpression = getV<FORCE>(vectorDist);
+	    auto drhoExpression = getV<DRHO>(vectorDist);
+	    auto typeExpression = getV<TYPE>(vectorDist);
+
+	    auto rhoExpression = getV<RHO>(vectorDist);
+	    auto rho_prevExpression = getV<RHO_PREV>(vectorDist);
+
+	    auto velocityExpression = getV<VELOCITY>(vectorDist);
+	    auto velocity_prevExpression = getV<VELOCITY_PREV>(vectorDist);
+
+		if (iteration < 10) {
+			X.data.get<0>() = rho_prevExpression;
+
+			X.data.get<4>() = velocity_prevExpression[0];
+			X.data.get<5>() = velocity_prevExpression[1];
+			X.data.get<6>() = velocity_prevExpression[2];
+
+			dxdt.data.get<0>() = 2*drhoExpression;
+
+			dxdt.data.get<1>() = velocityExpression[0] + forceExpression[0]*dt05 * typeExpression;
+			dxdt.data.get<2>() = velocityExpression[1] + forceExpression[1]*dt05 * typeExpression;
+			dxdt.data.get<3>() = velocityExpression[2] + forceExpression[2]*dt05 * typeExpression;
+
+			dxdt.data.get<4>() = forceExpression[0]*2 * typeExpression;
+			dxdt.data.get<5>() = forceExpression[1]*2 * typeExpression;
+			dxdt.data.get<6>() = forceExpression[2]*2 * typeExpression;
+		} 
+		
+		else
+		{
+			dxdt.data.get<0>() = drhoExpression;
+
+			dxdt.data.get<1>() = velocityExpression[0] + forceExpression[0]*dt05 * typeExpression;
+			dxdt.data.get<2>() = velocityExpression[1] + forceExpression[1]*dt05 * typeExpression;
+			dxdt.data.get<3>() = velocityExpression[2] + forceExpression[2]*dt05 * typeExpression;
+
+			dxdt.data.get<4>() = forceExpression[0] * typeExpression;
+			dxdt.data.get<5>() = forceExpression[1] * typeExpression;
+			dxdt.data.get<6>() = forceExpression[2] * typeExpression;
+		}
+    }
+};
+//! @cond [RHS1Functor] @endcond
+
 /*! \cond [dyn_stepping] \endcond */
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
  * This function perform verlet integration accordingly to the Verlet time stepping scheme
  *
@@ -731,57 +826,19 @@ double calc_deltaT(vector_dist_type & vectorDist, double ViscDtMax)
  * domain or their density go dangerously out of range. If a particle go out of range is removed
  * from the simulation
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp verlet_int
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp checkPosPrpLimits
  *
  *
  */
 
-/*! \cond [verlet_int] \endcond */
+/*! \cond [checkPosPrpLimits] \endcond */
 
 openfpm::vector<size_t> to_remove;
 
-size_t cnt = 0;
-
-void verlet_int(vector_dist_type & vectorDist, double dt)
+void checkPosPrpLimits(vector_dist_type & vectorDist)
 {
 	// list of the particle to remove
 	to_remove.clear();
-
-	double dt205 = dt*dt*0.5;
-	double dt2 = dt*2.0;
-
-	auto posExpression = getV<POS_PROP>(vectorDist);
-	auto forceExpression = getV<FORCE>(vectorDist);
-	auto drhoExpression = getV<DRHO>(vectorDist);
-	auto typeExpression = getV<TYPE>(vectorDist);
-
-	auto rhoExpression = getV<RHO>(vectorDist);
-	auto rho_tmpExpression = getV<RHO_TMP>(vectorDist);
-	auto rho_prevExpression = getV<RHO_PREV>(vectorDist);
-
-	auto velocityExpression = getV<VELOCITY>(vectorDist);
-	auto velocity_tmpExpression = getV<VELOCITY_TMP>(vectorDist);
-	auto velocity_prevExpression = getV<VELOCITY_PREV>(vectorDist);
-
-	rho_tmpExpression = rhoExpression;
-	rhoExpression = rho_prevExpression + dt2*drhoExpression;
-	rho_prevExpression = rho_tmpExpression;
-
-	posExpression[0] = posExpression[0] + velocityExpression[0]*dt + forceExpression[0]*dt205 * typeExpression;
-	posExpression[1] = posExpression[1] + velocityExpression[1]*dt + forceExpression[1]*dt205 * typeExpression;
-	posExpression[2] = posExpression[2] + velocityExpression[2]*dt + forceExpression[2]*dt205 * typeExpression;
-
-	velocity_tmpExpression[0] = velocityExpression[0];
-	velocity_tmpExpression[1] = velocityExpression[1];
-	velocity_tmpExpression[2] = velocityExpression[2];
-
-	velocityExpression[0] = velocity_prevExpression[0] + forceExpression[0]*dt2 * typeExpression;
-	velocityExpression[1] = velocity_prevExpression[1] + forceExpression[1]*dt2 * typeExpression;
-	velocityExpression[2] = velocity_prevExpression[2] + forceExpression[2]*dt2 * typeExpression;
-
-	velocity_prevExpression[0] = velocity_tmpExpression[0];
-	velocity_prevExpression[1] = velocity_tmpExpression[1];
-	velocity_prevExpression[2] = velocity_tmpExpression[2];
 
 	// particle iterator
 	auto part = vectorDist.getDomainIterator();
@@ -795,113 +852,37 @@ void verlet_int(vector_dist_type & vectorDist, double dt)
 		// if the particle is boundary
 		if (vectorDist.template getProp<TYPE>(a) == BOUNDARY)
 		{
-			double rho = vectorDist.template getProp<RHO>(a);
+	    	double rho = vectorDist.template getProp<RHO>(a);
 
-			if (rho < RhoZero)
-				vectorDist.template getProp<RHO>(a) = RhoZero;
+	    	if (rho < RhoZero)
+		    	vectorDist.template getProp<RHO>(a) = RhoZero;
 
 			++part;
 			continue;
 		}
 
-		// Check if the particle go out of range in space and in density
-		if (vectorDist.getPos(a)[0] <  0.000263878 || vectorDist.getPos(a)[1] < 0.000263878 || vectorDist.getPos(a)[2] < 0.000263878 ||
-			vectorDist.getPos(a)[0] >  0.000263878+1.59947 || vectorDist.getPos(a)[1] > 0.000263878+0.672972 || vectorDist.getPos(a)[2] > 0.000263878+0.903944 ||
+	    // Check if the particle go out of range in space and in density
+	    if (vectorDist.getPos(a)[0] <  0.000263878 || vectorDist.getPos(a)[1] < 0.000263878 || vectorDist.getPos(a)[2] < 0.000263878 ||
+	        vectorDist.getPos(a)[0] >  0.000263878+1.59947 || vectorDist.getPos(a)[1] > 0.000263878+0.672972 || vectorDist.getPos(a)[2] > 0.000263878+0.903944 ||
 			vectorDist.template getProp<RHO>(a) < RhoMin || vectorDist.template getProp<RHO>(a) > RhoMax)
-		{
+	    {
 			to_remove.add(a.getKey());
-		}
+	    }
 
 		++part;
 	}
 
 	// remove the particles
 	vectorDist.remove(to_remove,0);
-
-	// increment the iteration counter
-	cnt++;
 }
 
-void euler_int(vector_dist_type & vectorDist, double dt)
-{
-	// list of the particle to remove
-	to_remove.clear();
-
-	double dt205 = dt*dt*0.5;
-	double dt2 = dt*2.0;
-
-	auto posExpression = getV<POS_PROP>(vectorDist);
-	auto forceExpression = getV<FORCE>(vectorDist);
-	auto drhoExpression = getV<DRHO>(vectorDist);
-	auto typeExpression = getV<TYPE>(vectorDist);
-
-	auto rhoExpression = getV<RHO>(vectorDist);
-	auto rho_prevExpression = getV<RHO_PREV>(vectorDist);
-
-	auto velocityExpression = getV<VELOCITY>(vectorDist);
-	auto velocity_prevExpression = getV<VELOCITY_PREV>(vectorDist);
-
-	rho_prevExpression = rhoExpression;
-	rhoExpression = rhoExpression + dt*drhoExpression;
-
-	posExpression[0] = posExpression[0] + velocityExpression[0]*dt + forceExpression[0]*dt205 * typeExpression;
-	posExpression[1] = posExpression[1] + velocityExpression[1]*dt + forceExpression[1]*dt205 * typeExpression;
-	posExpression[2] = posExpression[2] + velocityExpression[2]*dt + forceExpression[2]*dt205 * typeExpression;
-
-	velocity_prevExpression[0] = velocityExpression[0];
-	velocity_prevExpression[1] = velocityExpression[1];
-	velocity_prevExpression[2] = velocityExpression[2];
-
-	velocityExpression[0] = velocityExpression[0] + forceExpression[0]*dt * typeExpression;
-	velocityExpression[1] = velocityExpression[1] + forceExpression[1]*dt * typeExpression;
-	velocityExpression[2] = velocityExpression[2] + forceExpression[2]*dt * typeExpression;
-
-	// particle iterator
-	auto part = vectorDist.getDomainIterator();
-
-	// For each particle ...
-	while (part.isNext())
-	{
-		// ... a
-		auto a = part.get();
-
-		// if the particle is boundary
-		if (vectorDist.template getProp<TYPE>(a) == BOUNDARY)
-		{
-			double rho = vectorDist.template getProp<RHO>(a);
-
-			if (rho < RhoZero)
-				vectorDist.template getProp<RHO>(a) = RhoZero;
-
-			++part;
-			continue;
-		}
-
-		// Check if the particle go out of range in space and in density
-		if (vectorDist.getPos(a)[0] <  0.000263878 || vectorDist.getPos(a)[1] < 0.000263878 || vectorDist.getPos(a)[2] < 0.000263878 ||
-			vectorDist.getPos(a)[0] >  0.000263878+1.59947 || vectorDist.getPos(a)[1] > 0.000263878+0.672972 || vectorDist.getPos(a)[2] > 0.000263878+0.903944 ||
-			vectorDist.template getProp<RHO>(a) < RhoMin || vectorDist.template getProp<RHO>(a) > RhoMax)
-		{
-			to_remove.add(a.getKey());
-		}
-
-		++part;
-	}
-
-	// remove the particles
-	vectorDist.remove(to_remove,0);
-
-	// increment the iteration counter
-	cnt++;
-}
-
-/*! \cond [verlet_int] \endcond */
+/*! \cond [checkPosPrpLimits] \endcond */
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
  *
- * ### Probes/sensors {#sph_expression_prob_sens}
+ * ### Probes/sensors {#sph_odeint_prob_sens}
  *
  * This function show how to create a pressure sensor/probe on a set of specified points. To do this
  * from the cell-list we just get an iterator across the neighborhood points of the sensors and we
@@ -915,7 +896,7 @@ void euler_int(vector_dist_type & vectorDist, double dt)
  *  to create a set of "probe" particles
  *
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp sens_press
+ * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp sens_press
  *
  *
  */
@@ -924,27 +905,27 @@ void euler_int(vector_dist_type & vectorDist, double dt)
 
 template<typename Vector, typename CellList>
 inline void sensor_pressure(Vector & vectorDist,
-							CellList & NN,
-							openfpm::vector<openfpm::vector<double>> & press_t,
-							openfpm::vector<Point<3,double>> & probes)
+                            CellList & cellList,
+                            openfpm::vector<openfpm::vector<double>> & press_t,
+                            openfpm::vector<Point<3,double>> & probes)
 {
-	Vcluster<> & v_cl = create_vcluster();
+    Vcluster<> & v_cl = create_vcluster();
 
-	press_t.add();
+    press_t.add();
 
-	for (size_t i = 0 ; i < probes.size() ; i++)
-	{
-		float press_tmp = 0.0f;
-		float tot_ker = 0.0;
+    for (size_t i = 0 ; i < probes.size() ; i++)
+    {
+        float press_tmp = 0.0f;
+        float tot_ker = 0.0;
 
-		// if the probe is inside the processor domain
+        // if the probe is inside the processor domain
 		if (vectorDist.getDecomposition().isLocal(probes.get(i)) == true)
 		{
 			// Get the position of the probe i
 			Point<3,double> xp = probes.get(i);
 
 			// get the iterator over the neighbohood particles of the probes position
-			auto itg = NN.getNNIteratorBox(NN.getCell(probes.get(i)));
+			auto itg = cellList.getNNIteratorBox(cellList.getCell(probes.get(i)));
 			while (itg.isNext())
 			{
 				auto q = itg.get();
@@ -1002,22 +983,22 @@ int main(int argc, char* argv[])
 {
 	/*!
 	 *
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
-	 * ## Main function {#sph_expression_main}
+	 * ## Main function {#sph_odeint_main}
 	 *
 	 * Here we Initialize the library, we create a Box that define our domain, boundary conditions and ghost. We also create
 	 * a vector that contain two probes to measure pressure
 	 *
 	 * \see \ref e0_s_init
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp Initialization and parameters
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp Initialization and parameters
 	 *
 	 */
 
 	//! \cond [Initialization and parameters] \endcond
 
-	// initialize the library
+    // initialize the library
 	openfpm_init(&argc,&argv);
 
 	// It contain for each time-step the value detected by the probes
@@ -1035,7 +1016,7 @@ int main(int argc, char* argv[])
 	W_dap = 1.0/Wab(H/1.5);
 
 	// Here we define the boundary conditions of our problem
-	size_t bc[3]={NON_PERIODIC,NON_PERIODIC,NON_PERIODIC};
+    size_t bc[3]={NON_PERIODIC,NON_PERIODIC,NON_PERIODIC};
 
 	// extended boundary around the domain, and the processor domain
 	Ghost<3,double> g(2*H);
@@ -1043,17 +1024,17 @@ int main(int argc, char* argv[])
 	//! \cond [Initialization and parameters] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
-	 * ### Vector create {#sph_expression_vcreate}
+	 * ### Vector create {#sph_odeint_vcreate}
 	 *
 	 * Here we define a distributed vector in 3D, we use the particles type that we defined previously.
 	 * Each particle contain the following properties
 	 * * **TYPE** Type of the particle
 	 * * **RHO** Density of the particle
-	 * * **RHO_PREV** Density at previous timestep
-	 * * **PRESSURE** Pressure of the particle
-	 * * **DRHO** Derivative of the density over time
+ 	 * * **RHO_PREV** Density at previous timestep
+     * * **PRESSURE** Pressure of the particle
+ 	 * * **DRHO** Derivative of the density over time
 	 * * **FORCE** acceleration of the particles
 	 * * **VELOCITY** velocity of the particles
 	 * * **VELOCITY_PREV** velocity of the particles at previous time-step
@@ -1072,8 +1053,8 @@ int main(int argc, char* argv[])
 	 * must be decomposed and \f$ N_p \f$ is the number of processors. (The concept
 	 * of sub-sub-domain will be explained leter)
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp vector inst
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp vector_dist_def
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp vector inst
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp vector_dist_def
 	 *
 	 */
 
@@ -1084,16 +1065,16 @@ int main(int argc, char* argv[])
 	//! \cond [vector inst] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
-	 * ### Draw particles and initialization ## {#sph_expression_draw_part_init}
+	 * ### Draw particles and initialization ## {#sph_odeint_draw_part_init}
 	 *
 	 * In this part we initialize the problem creating particles. In order to do it we use the class DrawParticles. Because some of
 	 * the simulation constants require the maximum height \f$ h_{swl} \f$ of the fluid to be calculated
 	 *  and the maximum fluid height is determined at runtime, some of the constants just after we create the
 	 *  fluid particles
 	 *
-	 *  ### Draw Fluid ### {#sph_expression_draw_part_fluid}
+	 *  ### Draw Fluid ### {#sph_odeint_draw_part_fluid}
 	 *
 	 * The Function DrawParticles::DrawBox return an iterator that can be used to create particle in a predefined
 	 * box (smaller than the simulation domain) with a predefined spacing.
@@ -1113,7 +1094,7 @@ int main(int argc, char* argv[])
 	 * <img src="http://ppmcore.mpi-cbg.de/web/images/examples/7_SPH_dlb/fluid.jpg"/>
 	 * \endhtmlonly
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp draw fluid
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp draw fluid
 	 *
 	 */
 
@@ -1172,7 +1153,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw fluid] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
 	 * ### Draw Recipient ###
 	 *
@@ -1186,11 +1167,11 @@ int main(int argc, char* argv[])
 	 *
 	 * In this case A is the box defining the recipient, B is the box cutting out the internal
 	 * part of the recipient, C is the hole where we will place the obstacle.
-	 * Because we use Dynamic boundary condition (DBC) we initialize the density
+     * Because we use Dynamic boundary condition (DBC) we initialize the density
 	 * to \f$ \rho_{0} \f$. It will be update over time according to equation (3) to keep
 	 * the particles confined.
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp draw recipient
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp draw recipient
 	 *
 	 */
 
@@ -1234,7 +1215,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw recipient] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
 	 *  ### Draw Obstacle ###
 	 *
@@ -1245,7 +1226,7 @@ int main(int argc, char* argv[])
 	 * <img src="http://ppmcore.mpi-cbg.de/web/images/examples/7_SPH_dlb/obstacle.jpg"/>
 	 * \endhtmlonly
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp draw obstacle
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp draw obstacle
 	 *
 	 */
 
@@ -1280,7 +1261,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw obstacle] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
 	 * ## Load balancing and Dynamic load balancing ##
 	 *
@@ -1303,7 +1284,7 @@ int main(int argc, char* argv[])
 	 * process a sub-sub-domain is quadratic or linear with the number of
 	 * particles ...). A model look like this.
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp model custom
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp model custom
 	 *
 	 *  Setting the the computational cost on sub-sub-domains is performed running
 	 *  across the particles. For each one of them, it is calculated on which sub-sub-domain it belong.
@@ -1352,7 +1333,7 @@ int main(int argc, char* argv[])
 	 * </div>
 	 * \endhtmlonly
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp load balancing
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp load balancing
 	 *
 	 * \htmlonly
 	 * <img src="http://ppmcore.mpi-cbg.de/web/images/examples/7_SPH_dlb/load_balanced_particles.jpg"/>
@@ -1373,12 +1354,12 @@ int main(int argc, char* argv[])
 
 	vectorDist.ghost_get<TYPE,RHO,PRESSURE,VELOCITY>();
 
-	auto NN = vectorDist.getCellList(2*H);
+	auto cellList = vectorDist.getCellList(2*H);
 
 	// Evolve
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
 	 * ## Main Loop ##
 	 *
@@ -1387,14 +1368,48 @@ int main(int argc, char* argv[])
 	 * and velocity. After 200 time-step we do a re-balancing. We save the configuration
 	 * and we calculate the pressure on the probe position every 0.01 seconds
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp main loop
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp main loop
 	 *
 	 */
 
 	//! \cond [main loop] \endcond
 
+    //Now we create a odeint stepper object (explicit Euler). Since we are in 7d, we are going to use "state_type_7d_ofp". Which is a structure or state_type compatible with odeint. We further pass all the parameters including "boost::numeric::odeint::vector_space_algebra_ofp",which tell odeint to use openfpm algebra.
+    // The template parameters are: state_type_7d_ofp (state type of X), double (type of the value inside the state), state_type_7d_ofp (state type of DxDt), double (type of the time), boost::numeric::odeint::vector_space_algebra_ofp (our algebra)
+    boost::numeric::odeint::euler<state_type_7d_ofp, double, state_type_7d_ofp, double, boost::numeric::odeint::vector_space_algebra_ofp> eulerOdeint;
+
+    //The method Odeint_rk4 from Odeint, requires system (a function which computes RHS of the PDE), an instance of the Compute RHS functor. We create the System with the correct types and parameteres for the operators as declared before.
+    RHSFunctor<decltype(vectorDist), decltype(cellList)> rhsFunctor(vectorDist, cellList);
+
+    //Furhter, odeint needs data in a state type "state_type_7d_ofp", we create one and fill in the initial condition.
+    state_type_7d_ofp X;
+
+    auto posExpression = getV<POS_PROP>(vectorDist);
+    auto forceExpression = getV<FORCE>(vectorDist);
+    auto drhoExpression = getV<DRHO>(vectorDist);
+    auto typeExpression = getV<TYPE>(vectorDist);
+
+    auto rhoExpression = getV<RHO>(vectorDist);
+    auto rho_tmpExpression = getV<RHO_TMP>(vectorDist);
+    auto rho_prevExpression = getV<RHO_PREV>(vectorDist);
+
+    auto velocityExpression = getV<VELOCITY>(vectorDist);
+    auto velocity_tmpExpression = getV<VELOCITY_TMP>(vectorDist);
+    auto velocity_prevExpression = getV<VELOCITY_PREV>(vectorDist);
+
+    //Since we created a 7d state_type we initialize three fields in the object data using the method get.
+	X.data.get<0>() = rhoExpression;
+	X.data.get<1>() = posExpression[0];
+	X.data.get<2>() = posExpression[1];
+	X.data.get<3>() = posExpression[2];
+    X.data.get<4>() = velocityExpression[0];
+    X.data.get<5>() = velocityExpression[1];
+    X.data.get<6>() = velocityExpression[2];
+
+    // global variable
+	iteration = 0;
+
 	size_t write = 0;
-	size_t it = 0;
 	size_t it_reb = 0;
 	double t = 0.0;
 	while (t <= t_end)
@@ -1426,25 +1441,48 @@ int main(int argc, char* argv[])
 
 		vectorDist.ghost_get<TYPE,RHO,PRESSURE,VELOCITY>();
 
+		// update subset data structures
+        // vectorDistSubsetFluid.update();
+        // vectorDistSubsetBoundary.update();
+
 		// Calc forces
-		calc_forces(vectorDist,NN,max_visc);
+		calc_forces(vectorDist,cellList,max_visc);
 
 		// Get the maximum viscosity term across processors
 		v_cl.max(max_visc);
 		v_cl.execute();
 
 		// Calculate delta t integration
-		double dt = calc_deltaT(vectorDist,max_visc);
+		dt = calc_deltaT(vectorDist,max_visc);
 
-		// VerletStep or euler step
-		it++;
-		if (it < 10)
-			verlet_int(vectorDist,dt);
-		else
-		{
-			euler_int(vectorDist,dt);
-			it = 0;
-		}
+		iteration++;
+
+	    rho_tmpExpression = rhoExpression;
+		velocity_tmpExpression[0] = velocityExpression[0];
+		velocity_tmpExpression[1] = velocityExpression[1];
+		velocity_tmpExpression[2] = velocityExpression[2];
+
+		eulerOdeint.do_step(rhsFunctor, X, t, dt);
+
+        rhoExpression=X.data.get<0>();
+		posExpression[0] = X.data.get<1>();
+		posExpression[1] = X.data.get<2>();
+		posExpression[2] = X.data.get<3>();
+		velocityExpression[0] = X.data.get<4>();
+		velocityExpression[1] = X.data.get<5>();
+		velocityExpression[2] = X.data.get<6>();
+        
+	    rho_prevExpression = rho_tmpExpression;
+		velocity_prevExpression[0] = velocity_tmpExpression[0];
+		velocity_prevExpression[1] = velocity_tmpExpression[1];
+		velocity_prevExpression[2] = velocity_tmpExpression[2];
+
+		if (iteration == 10)
+			// Once in 10 iterations 
+			// euler time stepping is done in RHSFunctor
+			iteration = 0;
+
+		checkPosPrpLimits(vectorDist);
 
 		t += dt;
 
@@ -1453,21 +1491,21 @@ int main(int argc, char* argv[])
 			// sensor_pressure calculation require ghost and update cell-list
 			vectorDist.map();
 			vectorDist.ghost_get<TYPE,RHO,PRESSURE,VELOCITY>();
-			vectorDist.updateCellList(NN);
+			vectorDist.updateCellList(cellList);
 
 			// calculate the pressure at the sensor points
-			sensor_pressure(vectorDist,NN,press_t,probes);
+			sensor_pressure(vectorDist,cellList,press_t,probes);
 
 			vectorDist.write_frame("Geometry",write);
 			write++;
 
 			if (v_cl.getProcessUnitID() == 0)
-			{std::cout << "TIME: " << t << "  write " << it_time.getwct() << "   " << v_cl.getProcessUnitID() << "   " << cnt << "   Max visc: " << max_visc << std::endl;}
+			{std::cout << "TIME: " << t << "  write " << it_time.getwct() << "   " << v_cl.getProcessUnitID() << "   " << iteration << "   Max visc: " << max_visc << std::endl;}
 		}
 		else
 		{
 			if (v_cl.getProcessUnitID() == 0)
-			{std::cout << "TIME: " << t << "  " << it_time.getwct() << "   " << v_cl.getProcessUnitID() << "   " << cnt << "    Max visc: " << max_visc << std::endl;}
+			{std::cout << "TIME: " << t << "  " << it_time.getwct() << "   " << v_cl.getProcessUnitID() << "   " << iteration << "    Max visc: " << max_visc << std::endl;}
 		}
 	}
 
@@ -1475,14 +1513,14 @@ int main(int argc, char* argv[])
 
 	/*!
 	 *
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
 	 * ## Finalize ## {#finalize_e0_sim}
 	 *
 	 *
 	 *  At the very end of the program we have always de-initialize the library
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main.cpp finalize
+	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp finalize
 	 *
 	 */
 
@@ -1493,11 +1531,11 @@ int main(int argc, char* argv[])
 	//! \cond [finalize] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
 	 *
-	 * ## Full code ## {#code_sph_expression_dlb}
+	 * ## Full code ## {#code_sph_odeint_dlb}
 	 *
-	 * \include example/Numerics/Odeint/SPH_dlb/main.cpp
+	 * \include example/Numerics/Odeint/SPH_dlb/main2.cpp
 	 *
 	 */
 }
