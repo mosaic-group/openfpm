@@ -227,11 +227,11 @@ int main(int argc, char* argv[])
 	auto vD = getV<D>(vd);
 
 	// This indicate the particle position
-	auto vPOS = getV<PROP_POS>(vd);
+	auto vPOS = getV<POS_PROP>(vd);
 
 	// same concept for the vector v2
 	auto v2A = getV<0>(vd);
-	auto v2POS = getV<PROP_POS>(vd);
+	auto v2POS = getV<POS_PROP>(vd);
 
 	//! \cond [expr init] \endcond
 

@@ -297,7 +297,7 @@ int main(int argc, char* argv[]) {
     Derivative_xx<decltype(verletList)> Dxx(Particles, verletList, 2, rCut);
     Derivative_yy<decltype(verletList)> Dyy(Particles, verletList, 2, rCut);
     //We create aliases for referring to property and and positions.
-    auto Pos = getV<PROP_POS>(Particles);
+    auto Pos = getV<POS_PROP>(Particles);
     auto C = getV<0>(Particles);
     auto V = getV<1>(Particles);
     auto dC = getV<2>(Particles);

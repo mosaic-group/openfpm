@@ -35,7 +35,7 @@
  *
  * These are the header files that we need to include:
  *
- * @snippet example/Numerics/Odeint/main2.cpp Ode2Include
+ * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp Ode2Include
  *
  */
 //! @cond [Ode2Include] @endcond
@@ -66,7 +66,7 @@
  *
  * dist_vector_type as the 2d openfpm distributed subset vector type
  *
- * @snippet example/Numerics/Odeint/main2.cpp Initialization__two
+ * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp Initialization__two
  *
  */
 //! @cond [Initialization__two] @endcond
@@ -108,7 +108,7 @@ typedef vector_dist_subset<2, double, Property_type> dist_vector_subset_type;
  *
  * )
  *
- * @snippet example/Numerics/Odeint/main2.cpp RHS2Functor
+ * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp RHS2Functor
  *
  */
 //! @cond [RHS2Functor] @endcond
@@ -179,7 +179,7 @@ struct RHSFunctor
  * We do our computations as required.
  * Then we copy back the output into the state_type dxdt.
  *
- * @snippet example/Numerics/Odeint/main2.cpp Observer2Functor
+ * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp Observer2Functor
  *
  */
 //! @cond [Observer2Functor] @endcond
@@ -208,7 +208,7 @@ struct ObserverFunctor {
         dist_vector_subset_type &Particles_boundary = *(dist_vector_subset_type *) PointerDistSubset2;
 
         //Aliasing the position and properties.
-        auto Pos = getV<PROP_POS>(Particles);
+        auto Pos = getV<POS_PROP>(Particles);
         auto Concentration = getV<0>(Particles);
         auto Velocity = getV<1>(Particles);
         auto Concentration_bulk = getV<0>(Particles_bulk);
@@ -258,7 +258,7 @@ struct ObserverFunctor {
  * We start with
  * * Initializing OpenFPM
  *
- * @snippet example/Numerics/Odeint/main2.cpp initParticles2
+ * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp initParticles2
  *
  */
 //! @cond [initParticles2] @endcond
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
      *
      * Also, we fill the initial concentration as C_1(x=0,y>0 & y<0.5,t=0)=1,C_2(x=0,y<0 & y>-0.5,t=0)=1 and 0 everywhere else.
      *
-     * @snippet example/Numerics/Odeint/main2.cpp init2Subset
+     * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp init2Subset
      *
      */
     //! @cond [init2Subset] @endcond
@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
      * Further, We cast the Global Pointers so that Odeint RHS functor can recognize our openfpm distributed structure.
      *
      *
-     * @snippet example/Numerics/Odeint/main2.cpp Pointer2Init
+     * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp Pointer2Init
      */
     //! @cond [Pointer2Init] @endcond
     // Now we initialize the grid with a filled circle. Outside the circle, the value of Phi_0 will be -1, inside +1.
@@ -361,7 +361,7 @@ int main(int argc, char *argv[])
      *
      * Here we create two dcpse based operators and alias the particle properties.
      *
-     * @snippet example/Numerics/Odeint/main2.cpp DCPSE2Alias
+     * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp DCPSE2Alias
      *
      */
     //! @cond [DCPSE2Alias] @endcond
@@ -371,7 +371,7 @@ int main(int argc, char *argv[])
     Derivative_xx<decltype(verletList)> Dxx(Particles, verletList, 2, rCut);
     Derivative_yy<decltype(verletList)> Dyy(Particles, verletList, 2, rCut);
     //We create aliases for referring to property and and positions.
-    auto Pos = getV<PROP_POS>(Particles);
+    auto Pos = getV<POS_PROP>(Particles);
     auto C = getV<0>(Particles);
     auto V = getV<1>(Particles);
     auto dC = getV<2>(Particles);
@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
      *
      * Also, we create the state type compatible with odeint and initialize the concentration in it.
      *
-     * @snippet example/Numerics/Odeint/main2.cpp Odeint2I
+     * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp Odeint2I
      *
      */
     //! @cond [Odeint2I] @endcond
@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
     *
     * We finally deallocate the DCPSE operators and finalize the library.
     *
-    * @snippet example/Numerics/Odeint/main2.cpp OdeintTCall
+    * @snippet example/Numerics/Odeint/Advection-Diffusion/main2.cpp OdeintTCall
     *
     */
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -467,5 +467,5 @@ int main(int argc, char *argv[])
  *
  * ## Full code ## {#odeint_c2_full}
  *
- * @include example/Numerics/Odeint/main2.cpp
+ * @include example/Numerics/Odeint/Advection-Diffusion/main2.cpp
  */

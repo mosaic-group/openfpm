@@ -299,7 +299,7 @@ struct CalcVelocity
 
         timer tt;
         
-        auto Pos = getV<PROP_POS>(Particles);
+        auto Pos = getV<POS_PROP>(Particles);
         auto Pol=getV<POLARIZATION>(Particles);
         auto V = getV<VELOCITY>(Particles);
         auto H_p_b = getV<HPB>(Particles);
@@ -651,7 +651,7 @@ int main(int argc, char* argv[])
         Particles.map();
         Particles.ghost_get<POLARIZATION>();
 
-        //auto Pos = getV<PROP_POS>(Particles);
+        //auto Pos = getV<POS_PROP>(Particles);
 
         auto Pol = getV<POLARIZATION>(Particles);
         auto V = getV<VELOCITY>(Particles);
