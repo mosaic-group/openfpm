@@ -1438,7 +1438,7 @@ int main(int argc, char* argv[])
 
 		// VerletStep or euler step
 		it++;
-		if (it < 10)
+		if (it < 40)
 			verlet_int(vectorDist,dt);
 		else
 		{

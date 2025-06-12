@@ -766,7 +766,7 @@ struct RHSFunctor
 	    auto velocityExpression = getV<VELOCITY>(vectorDist);
 	    auto velocity_prevExpression = getV<VELOCITY_PREV>(vectorDist);
 
-		if (iteration < 10) {
+		if (iteration < 40) {
 			X.data.get<0>() = rho_prevExpression;
 
 			X.data.get<4>() = velocity_prevExpression[0];
@@ -1378,7 +1378,7 @@ int main(int argc, char* argv[])
     // The template parameters are: state_type_7d_ofp (state type of X), double (type of the value inside the state), state_type_7d_ofp (state type of DxDt), double (type of the time), boost::numeric::odeint::vector_space_algebra_ofp (our algebra)
     boost::numeric::odeint::euler<state_type_7d_ofp, double, state_type_7d_ofp, double, boost::numeric::odeint::vector_space_algebra_ofp> eulerOdeint;
 
-    //The method Odeint_rk4 from Odeint, requires system (a function which computes RHS of the PDE), an instance of the Compute RHS functor. We create the System with the correct types and parameteres for the operators as declared before.
+    // RHS functor for odeint
     RHSFunctor<decltype(vectorDist), decltype(cellList)> rhsFunctor(vectorDist, cellList);
 
     //Furhter, odeint needs data in a state type "state_type_7d_ofp", we create one and fill in the initial condition.
@@ -1453,8 +1453,10 @@ int main(int argc, char* argv[])
 		v_cl.execute();
 
 		// Calculate delta t integration
+		// global variable
 		dt = calc_deltaT(vectorDist,max_visc);
 
+		// global iteration variable
 		iteration++;
 
 	    rho_tmpExpression = rhoExpression;
@@ -1477,8 +1479,8 @@ int main(int argc, char* argv[])
 		velocity_prevExpression[1] = velocity_tmpExpression[1];
 		velocity_prevExpression[2] = velocity_tmpExpression[2];
 
-		if (iteration == 10)
-			// Once in 10 iterations 
+		if (iteration == 40)
+			// Once in 40 iterations
 			// euler time stepping is done in RHSFunctor
 			iteration = 0;
 
