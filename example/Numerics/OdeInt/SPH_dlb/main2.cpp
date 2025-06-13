@@ -1464,6 +1464,25 @@ int main(int argc, char* argv[])
 		velocity_tmpExpression[1] = velocityExpression[1];
 		velocity_tmpExpression[2] = velocityExpression[2];
 
+		// Reinitialize Odeint state vector as the particle
+		// distribution could have changed after map()
+		if (iteration < 40) {
+			X.data.get<0>() = rho_prevExpression;
+
+			X.data.get<4>() = velocity_prevExpression[0];
+			X.data.get<5>() = velocity_prevExpression[1];
+			X.data.get<6>() = velocity_prevExpression[2];
+		} else {
+			X.data.get<0>() = rhoExpression;
+			X.data.get<4>() = velocityExpression[0];
+			X.data.get<5>() = velocityExpression[1];
+			X.data.get<6>() = velocityExpression[2];
+		}
+
+		X.data.get<1>() = posExpression[0];
+		X.data.get<2>() = posExpression[1];
+		X.data.get<3>() = posExpression[2];
+
 		eulerOdeint.do_step(rhsFunctor, X, t, dt);
 
         rhoExpression=X.data.get<0>();
@@ -1494,6 +1513,25 @@ int main(int argc, char* argv[])
 			vectorDist.map();
 			vectorDist.ghost_get<TYPE,RHO,PRESSURE,VELOCITY>();
 			vectorDist.updateCellList(cellList);
+
+			// Reinitialize Odeint state vector as the particle
+			// distribution could have changed after map()
+			if (iteration < 40) {
+				X.data.get<0>() = rho_prevExpression;
+
+				X.data.get<4>() = velocity_prevExpression[0];
+				X.data.get<5>() = velocity_prevExpression[1];
+				X.data.get<6>() = velocity_prevExpression[2];
+			} else {
+				X.data.get<0>() = rhoExpression;
+				X.data.get<4>() = velocityExpression[0];
+				X.data.get<5>() = velocityExpression[1];
+				X.data.get<6>() = velocityExpression[2];
+			}
+
+			X.data.get<1>() = posExpression[0];
+			X.data.get<2>() = posExpression[1];
+			X.data.get<3>() = posExpression[2];
 
 			// calculate the pressure at the sensor points
 			sensor_pressure(vectorDist,cellList,press_t,probes);
