@@ -148,7 +148,7 @@ if [ -d "$prefix_dependencies/VCDEVEL" ]; then
 fi
 
 if [ -d "$prefix_dependencies/OPENBLAS" ]; then
-    configure_options=" $configure_options -DOPENBLAS_ROOT=$prefix_dependencies/OPENBLAS/"
+    configure_options=" $configure_options -DOPENBLAS_ROOT=$prefix_dependencies/OPENBLAS/ -DBLAS_ROOT=$prefix_dependencies/OPENBLAS/"
 fi
 
 if [ -d "$prefix_dependencies/SUITESPARSE"  -a -f "$prefix_dependencies/SUITESPARSE/include/umfpack.h" ]; then
