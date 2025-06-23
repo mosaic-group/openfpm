@@ -983,6 +983,18 @@ int main(int argc, char* argv[])
 		// global odeint iteration variable
 		odeintIteration++;
 
+		// Reinitialize Odeint state vector as the particle
+		// distribution could have changed after map()
+		if (odeintIteration < 40) {
+			X.data.get<0>() = rho_prevExpression;
+			X.data.get<2>() = velocity_prevExpression;
+		} else {
+			X.data.get<0>() = rhoExpression;
+			X.data.get<2>() = velocityExpression;
+		}
+
+		X.data.get<1>() = posExpression;
+
 		rho_tmpExpression = rhoExpression;
 		velocity_tmpExpression = velocityExpression;
 
