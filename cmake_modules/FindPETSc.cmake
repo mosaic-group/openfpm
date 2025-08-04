@@ -22,7 +22,7 @@
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 #
 
-cmake_policy(VERSION 3.3)
+cmake_policy(VERSION 3.5...3.27)
 
 set(PETSC_VALID_COMPONENTS
   C
@@ -293,6 +293,16 @@ int main(int argc,char *argv[]) {
   find_path (PETSC_INCLUDE_CONF petscconf.h HINTS "${PETSC_DIR}" PATH_SUFFIXES "${PETSC_ARCH}/include" "bmake/${PETSC_ARCH}" NO_DEFAULT_PATH)
   mark_as_advanced (PETSC_INCLUDE_DIR PETSC_INCLUDE_CONF)
   set (petsc_includes_minimal ${PETSC_INCLUDE_CONF} ${PETSC_INCLUDE_DIR})
+  find_package(MPI REQUIRED)
+  if (MPI_FOUND)
+    # 1) Make the “minimal” and “all” include‐paths see mpi.h:
+    list(APPEND petsc_includes_minimal ${MPI_C_INCLUDE_DIRS})
+    list(APPEND petsc_includes_all     ${MPI_C_INCLUDE_DIRS})
+
+    # 2) Make the TS‐test and the “all”‐libraries test link libmpi:
+    list(APPEND PETSC_LIBRARIES_TS  ${MPI_C_LIBRARIES})
+    list(APPEND PETSC_LIBRARIES_ALL ${MPI_C_LIBRARIES})
+  endif()
 
   petsc_test_runs ("${petsc_includes_minimal}" "${PETSC_LIBRARIES_TS}" petsc_works_minimal)
   if (petsc_works_minimal)
