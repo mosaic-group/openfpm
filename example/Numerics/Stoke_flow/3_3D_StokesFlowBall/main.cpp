@@ -297,12 +297,19 @@ int main(int argc, char* argv[])
         double sampling2=1.9;
         double rCut2=3.9*spacing;
 
-        Derivative_x Dx(Particles, 2, rCut,sampling, support_options::RADIUS),B_Dx(Particles_bulk, 2, rCut,sampling, support_options::RADIUS);
-        Derivative_y Dy(Particles, 2, rCut,sampling, support_options::RADIUS),B_Dy(Particles_bulk, 2, rCut,sampling, support_options::RADIUS);
-        Derivative_z Dz(Particles, 2, rCut,sampling, support_options::RADIUS),B_Dz(Particles_bulk, 2, rCut,sampling, support_options::RADIUS);
-        Derivative_xx Dxx(Particles, 2, rCut2,sampling2,support_options::RADIUS);
-        Derivative_yy Dyy(Particles, 2, rCut2,sampling2,support_options::RADIUS);
-        Derivative_zz Dzz(Particles, 2, rCut2,sampling2,support_options::RADIUS);
+        auto verletList = Particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+        auto verletList2 = Particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut2);
+        auto verletList_bulk = Particles_bulk.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+
+        Derivative_x<decltype(verletList)> Dx(Particles, verletList, 2, rCut, support_options::RADIUS);
+        Derivative_y<decltype(verletList)> Dy(Particles, verletList, 2, rCut, support_options::RADIUS);
+        Derivative_z<decltype(verletList)> Dz(Particles, verletList, 2, rCut, support_options::RADIUS);
+        Derivative_x<decltype(verletList_bulk)> B_Dx(Particles, Particles_bulk, verletList_bulk, 2, rCut, support_options::RADIUS);
+        Derivative_y<decltype(verletList_bulk)> B_Dy(Particles, Particles_bulk, verletList_bulk, 2, rCut, support_options::RADIUS);
+        Derivative_z<decltype(verletList_bulk)> B_Dz(Particles, Particles_bulk, verletList_bulk, 2, rCut, support_options::RADIUS);
+        Derivative_xx<decltype(verletList2)> Dxx(Particles, verletList2, 2, rCut2, support_options::RADIUS);
+        Derivative_yy<decltype(verletList2)> Dyy(Particles, verletList2, 2, rCut2, support_options::RADIUS);
+        Derivative_zz<decltype(verletList2)> Dzz(Particles, verletList2, 2, rCut2, support_options::RADIUS);
 
         //! \cond [Ball1InitAna3] \endcond
 

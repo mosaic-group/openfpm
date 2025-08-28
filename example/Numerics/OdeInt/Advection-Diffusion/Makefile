@@ -1,5 +1,7 @@
-include ../../example.mk
-include ../../common.mk
+include ../../../example.mk
+include ../../../common.mk
+
+
 
 OBJ = main.o
 OBJ2 = main2.o

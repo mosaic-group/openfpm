@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
 	auto v_force = getV<force>(vd);
 	auto v_velocity = getV<velocity>(vd);
-	auto v_pos = getV<PROP_POS>(vd);
+	auto v_pos = getV<POS_PROP>(vd);
 
 	auto it = vd.getGridIterator(sz);
 

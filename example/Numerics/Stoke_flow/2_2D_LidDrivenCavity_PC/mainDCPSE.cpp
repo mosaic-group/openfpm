@@ -191,12 +191,16 @@ int main(int argc, char* argv[])
 
 
         P_bulk = 0;
-        Derivative_x Dx(Particles, 2, rCut);
-        Derivative_xx Dxx(Particles, 2, rCut);
-        Derivative_yy Dyy(Particles, 2, rCut);
-        Derivative_y Dy(Particles, 2, rCut);
-        Derivative_x Bulk_Dx(Particles_bulk, 2, rCut);
-        Derivative_y Bulk_Dy(Particles_bulk, 2, rCut);
+
+        auto verletList = Particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+        auto verletList_bulk = Particles_bulk.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+
+        Derivative_x<decltype(verletList)> Dx(Particles, verletList, 2, rCut);
+        Derivative_xx<decltype(verletList)> Dxx(Particles, verletList, 2, rCut);
+        Derivative_yy<decltype(verletList)> Dyy(Particles, verletList, 2, rCut);
+        Derivative_y<decltype(verletList)> Dy(Particles, verletList, 2, rCut);
+        Derivative_x<decltype(verletList_bulk)> Bulk_Dx(Particles, Particles_bulk, verletList_bulk, 2, rCut);
+        Derivative_y<decltype(verletList_bulk)> Bulk_Dy(Particles, Particles_bulk, verletList_bulk, 2, rCut);
 	    //! \cond [LidDCPSEexp] \endcond
 
         /*!

@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
 	 *  phases, for example between phase0 and phase1. Let suppose now that we want to construct
 	 *  a verlet-list that given the particles of the phase0 it return the neighborhood particles
 	 *   in phase1. In order to do this we can create a Cell-list from phase1. Once we have the
-	 *   Cell-list for phase 1 we give to **createVerlet()**
+	 *   Cell-list for phase 1 we give to **createVerletTwoPhase()**
 	 *  the particle set of phase0, the Cell-list of phase1 and the cut-off radius.
 	 *  The function return a VerletList between phase0 and 1 that can be used to do computation.
 	 *
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 	auto CL_phase1 = phases.get(1).getCellList(r_cut);
 
 	// This function create a Verlet-list between phases 0 and 1
-	auto NN_ver01 = createVerlet(phases.get(0),phases.get(1),CL_phase1,r_cut);
+	auto NN_ver01 = createVerletTwoPhase(phases.get(0),phases.get(1),CL_phase1,r_cut);
 
 	//! \cond [create multi-phase verlet] \endcond
 

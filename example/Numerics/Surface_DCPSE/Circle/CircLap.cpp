@@ -104,8 +104,9 @@ int main(int argc, char * argv[]) {
 
   //SurfaceDerivative_xx<NORMAL> Sdxx{particles,2,rCut,grid_spacing};
   //SurfaceDerivative_yy<NORMAL> Sdyy{particles,2,rCut,grid_spacing};
-  SurfaceDerivative_xx<NORMAL> Sdxx(particles, ord, rCut,grid_spacing);
-  SurfaceDerivative_yy<NORMAL> Sdyy(particles, ord, rCut,grid_spacing);
+  auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
+  SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx(particles, verletList, ord, rCut, grid_spacing, rCut/grid_spacing);
+  SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy(particles, verletList, ord, rCut, grid_spacing, rCut/grid_spacing);
 
   auto f=getV<F>(particles);
   auto df=getV<DF>(particles);

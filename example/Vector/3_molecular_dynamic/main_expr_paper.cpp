@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 	// we use them to write math expressions
 	auto force = getV<force_prop>(particles);
 	auto velocity = getV<velocity_prop>(particles);
-	auto position = getV<PROP_POS>(particles);
+	auto position = getV<POS_PROP>(particles);
 
 	// set the velocity to zero (a math expression)
 	velocity = 0;

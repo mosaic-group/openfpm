@@ -148,7 +148,7 @@ if [ -d "$prefix_dependencies/VCDEVEL" ]; then
 fi
 
 if [ -d "$prefix_dependencies/OPENBLAS" ]; then
-    configure_options=" $configure_options -DOPENBLAS_ROOT=$prefix_dependencies/OPENBLAS/"
+    configure_options=" $configure_options -DOPENBLAS_ROOT=$prefix_dependencies/OPENBLAS/ -DBLAS_ROOT=$prefix_dependencies/OPENBLAS/"
 fi
 
 if [ -d "$prefix_dependencies/SUITESPARSE"  -a -f "$prefix_dependencies/SUITESPARSE/include/umfpack.h" ]; then
@@ -160,11 +160,15 @@ if [ -d "$prefix_dependencies/EIGEN" ]; then
     configure_options=" $configure_options -DEIGEN3_ROOT=$prefix_dependencies/EIGEN "
 fi
 
+if [ -d "$prefix_dependencies/MINTER" ]; then
+    configure_options=" $configure_options -DMINTER_ROOT=$prefix_dependencies/MINTER "
+fi
+
 if [ -d "$i_dir/CATALYST/lib" ]; then
   configure_options=" $configure_options -Dcatalyst_DIR=$prefix_dependencies/CATALYST/lib/cmake/catalyst-2.0 "
 elif [ -d "$i_dir/CATALYST/lib64" ]; then
   configure_options=" $configure_options -Dcatalyst_DIR=$prefix_dependencies/CATALYST/lib64/cmake/catalyst-2.0 "
 fi
 
-echo "CXX=mpic++ DYLD_LIBRARY_PATH=$ld_lib_pathopt cmake ../. $configure_options"
-printf "CXX=mpic++ DYLD_LIBRARY_PATH=$ld_lib_pathopt cmake ../. $configure_options" > cmake_build_options
+echo "CC=mpicc CXX=mpic++ DYLD_LIBRARY_PATH=$ld_lib_pathopt cmake ../. $configure_options"
+printf "CC=mpicc CXX=mpic++ DYLD_LIBRARY_PATH=$ld_lib_pathopt cmake ../. $configure_options" > cmake_build_options
