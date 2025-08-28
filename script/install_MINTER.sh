@@ -1,7 +1,8 @@
 #! /bin/bash
 
 rm -rf minter
-git clone -b header_only https://git.mpi-cbg.de/mosaic/software/math/minter.git
+wget http://ppmcore.mpi-cbg.de/upload/minter.tar.gz -O minter.tar.gz
+tar -xf minter.tar.gz
 
 mkdir -p $1/MINTER
 mv minter/include $1/MINTER/minter
