@@ -1,9 +1,9 @@
 #!/bin/bash
 
-rm -rf openmpi-4.1.6
-wget http://ppmcore.mpi-cbg.de/upload/openmpi-4.1.6.tar.gz -O openmpi-4.1.6.tar.gz
-tar -xvf openmpi-4.1.6.tar.gz
-cd openmpi-4.1.6
+rm -rf openmpi-5.0.8
+wget http://ppmcore.mpi-cbg.de/upload/openmpi-5.0.8.tar.gz -O openmpi-5.0.8.tar.gz
+tar -xvf openmpi-5.0.8.tar.gz
+cd openmpi-5.0.8
 
 if [ x"$3" == x"1" ]; then
    echo "Installing MPI with GPU support"

@@ -1,9 +1,10 @@
 #! /bin/bash
 
-wget http://ppmcore.mpi-cbg.de/upload/OpenBLAS-0.3.26.tar.gz -O OpenBLAS-0.3.26.tar.gz
-tar -xf OpenBLAS-0.3.26.tar.gz
-cd OpenBLAS-0.3.26
+wget http://ppmcore.mpi-cbg.de/upload/OpenBLAS-develop.tar.gz -O OpenBLAS-develop.tar.gz
+tar -xf OpenBLAS-develop.tar.gz
+cd OpenBLAS-develop
 
-make FC=$FC CC=$CC -j $2
+make clean
 mkdir $1/OPENBLAS
+make FC=$FC CC=$CC BUILD_WITHOUT_LAPACK=1 USE_OPENMP=0 NOFORTRAN=1 -j $2
 make install PREFIX=$1/OPENBLAS

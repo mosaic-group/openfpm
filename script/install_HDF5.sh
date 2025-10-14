@@ -1,8 +1,8 @@
 #! /bin/bash
 
 ### 1.8.19 does not compile on CYGWIN
-rm -rf hdf5-1.14.3
-wget http://ppmcore.mpi-cbg.de/upload/hdf5-1.14.3.tar.gz -O hdf5-1.14.3.tar.gz
+rm -rf hdf5-1.14.5
+wget http://ppmcore.mpi-cbg.de/upload/hdf5-1.14.5.tar.gz -O hdf5-1.14.5.tar.gz
 tar -xf hdf5-1.14.3.tar.gz
 cd hdf5-1.14.3
 

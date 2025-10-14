@@ -8,7 +8,7 @@ F77=$5
 FC=$6
 
 function test_configure_options() {
-  cd petsc-3.20.5
+  cd petsc-3.23.7
   $python_command ./configure COPTFLAGS="-O3 -g" CXXOPTFLAGS="-O3 -g" FOPTFLAGS="-O3 -g" $ldflags_petsc  --with-cxx-dialect=C++11 $petsc_openmp --with-mpi-dir=$mpi_dir $configure_options2 --with-debugging=0
   error=$?
   cd ..
@@ -20,8 +20,8 @@ function haveProg() {
 
 python_command=python3
 
-wget http://ppmcore.mpi-cbg.de/upload/petsc-3.20.5.tar.gz -O petsc-3.20.5.tar.gz
-tar -xf petsc-3.20.5.tar.gz
+wget http://ppmcore.mpi-cbg.de/upload/petsc-3.23.7.tar.gz -O petsc-3.23.7.tar.gz
+tar -xf petsc-3.23.7.tar.gz
 
 ## If some dependencies has been installed feed them to PETSC
 
@@ -93,9 +93,9 @@ fi
 
 configure_options="$configure_options --download-scalapack "
 
-rm -rf petsc-3.20.5
-tar -xf petsc-3.20.5.tar.gz
-cd petsc-3.20.5
+rm -rf petsc-3.23.7
+tar -xf petsc-3.23.7.tar.gz
+cd petsc-3.23.7
 
 if [ x"$CXX" != x"icpc" ]; then
 
