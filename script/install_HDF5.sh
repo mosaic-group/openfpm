@@ -8,10 +8,10 @@ cd hdf5-1.14.3
 
 # Disable zlib is completly unstable
 if [[ "$OSTYPE" != "cygwin" ]]; then
-        CC=mpicc ./configure --with-zlib=$1/ZLIB --enable-parallel --prefix=$1/HDF5
+        CC=$3 ./configure --with-zlib=$1/ZLIB --enable-parallel --prefix=$1/HDF5
 	make -j $2
 else
-        CC=mpicc ./configure --enable-parallel --prefix=$1/HDF5
+        CC=$3 ./configure --enable-parallel --prefix=$1/HDF5
 	make CFLAGS=-D_POSIX_C_SOURCE -j $2
 fi
 

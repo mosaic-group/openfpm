@@ -23,6 +23,8 @@ python_command=python3
 wget http://ppmcore.mpi-cbg.de/upload/petsc-3.23.7.tar.gz -O petsc-3.23.7.tar.gz
 tar -xf petsc-3.23.7.tar.gz
 
+touch petsc-3.23.7/config/utils/__init__.py
+
 ## If some dependencies has been installed feed them to PETSC
 
 configure_options="--with-64-bit-indices --with-parmetis-include=$1/PARMETIS/include --with-parmetis-lib=$1/PARMETIS/lib/libparmetis.a"
@@ -95,6 +97,7 @@ configure_options="$configure_options --download-scalapack "
 
 rm -rf petsc-3.23.7
 tar -xf petsc-3.23.7.tar.gz
+touch petsc-3.23.7/config/utils/__init__.py
 cd petsc-3.23.7
 
 if [ x"$CXX" != x"icpc" ]; then

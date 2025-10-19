@@ -2,7 +2,7 @@
 
 wget http://ppmcore.mpi-cbg.de/upload/OpenBLAS-develop.tar.gz -O OpenBLAS-develop.tar.gz
 tar -xf OpenBLAS-develop.tar.gz
-cd OpenBLAS-develop
+cd OpenBLAS
 
 make clean
 mkdir $1/OPENBLAS
