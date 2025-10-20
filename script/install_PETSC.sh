@@ -6,6 +6,7 @@ CXX=$4
 CC=$3
 F77=$5
 FC=$6
+CUDA_SUPPORT=$7
 
 function test_configure_options() {
   cd petsc-3.23.7
@@ -28,6 +29,10 @@ touch petsc-3.23.7/config/utils/__init__.py
 ## If some dependencies has been installed feed them to PETSC
 
 configure_options="--with-64-bit-indices --with-parmetis-include=$1/PARMETIS/include --with-parmetis-lib=$1/PARMETIS/lib/libparmetis.a"
+
+if [ CUDA_SUPPORT ]; then
+	configure_options="$configure_options --with-cuda --with-cudac=nvcc --with-cuda-arch=$8"
+fi
 
 if [ -f "$1/METIS/lib/libmetis.so" ]; then
   configure_options="$configure_options --with-metis-include=$1/METIS/include --with-metis-lib=$1/METIS/lib/libmetis.so "
