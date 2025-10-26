@@ -58,11 +58,14 @@ if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux" ]]; then
     lin_alg_lib="$lin_alg_lib -lrt"
 fi
 
+catalyst_lib=""
+catalyst_lib_dir=""
+
 if [ -d "$prefix_dependencies/CATALYST/lib" ]; then
-  catalyst_lib=$prefix_dependencies/CATALYST/lib
+  catalyst_lib="$prefix_dependencies/CATALYST/lib -lcatalyst"
   catalyst_lib_dir=-L$prefix_dependencies/CATALYST/lib
 elif [ -d "$prefix_dependencies/CATALYST/lib64" ]; then
-  catalyst_lib=$prefix_dependencies/CATALYST/lib64
+  catalyst_lib="$prefix_dependencies/CATALYST/lib64 -lcatalyst"
   catalyst_lib_dir=-L$prefix_dependencies/CATALYST/lib64
 fi
 
@@ -71,6 +74,6 @@ echo "LIBS_PATH=$mpi_libs -L$prefix_openfpm/openfpm_devices/lib -L$prefix_openfp
 if [ x"$cuda_on_cpu" == x"YES" ]; then
    echo "CUDA_ON_CPU=YES" >> example.mk
 fi
-echo "LIBS=$openmp_flags $mpi_libs $openmp_libs -lvcluster -lofpm_pdata -lofpmmemory -lparmetis -lmetis -lboost_iostreams -lboost_program_options -lhdf5 -llibhilbert -lVc  $cuda_lib $lin_alg_lib -ldl -lboost_filesystem -lboost_system $optional_boost -lcatalyst" >> example.mk
-echo "LIBS_NVCC=-Xcompiler=$openmp_flags $mpi_libs -lvcluster -lofpm_pdata -lofpmmemory -lparmetis -lmetis -lboost_iostreams -lboost_program_options -lhdf5 -llibhilbert -lVc  $cuda_lib $lin_alg_lib -ldl -lboost_filesystem -lboost_system $optional_boost -lcatalyst" >> example.mk
+echo "LIBS=$openmp_flags $mpi_libs $openmp_libs -lvcluster -lofpm_pdata -lofpmmemory -lparmetis -lmetis -lboost_iostreams -lboost_program_options -lhdf5 -llibhilbert -lVc  $cuda_lib $lin_alg_lib -ldl -lboost_filesystem -lboost_system $optional_boost $catalyst_lib" >> example.mk
+echo "LIBS_NVCC=-Xcompiler=$openmp_flags $mpi_libs -lvcluster -lofpm_pdata -lofpmmemory -lparmetis -lmetis -lboost_iostreams -lboost_program_options -lhdf5 -llibhilbert -lVc  $cuda_lib $lin_alg_lib -ldl -lboost_filesystem -lboost_system $optional_boost $catalyst_lib" >> example.mk
 echo "INCLUDE_PATH_NVCC=-Xcompiler=$openmp_flags "$cuda_options" $mpi_include_dirs -I. -I$prefix_openfpm/openfpm_numerics/include -I$prefix_openfpm/openfpm_pdata/include/config -I$prefix_openfpm/openfpm_pdata/include -I$prefix_openfpm/openfpm_data/include -I$prefix_openfpm/openfpm_vcluster/include -I$prefix_openfpm/openfpm_io/include -I$prefix_openfpm/openfpm_devices/include -I$prefix_dependencies/METIS/include -I$prefix_dependencies/PARMETIS/include -I$prefix_dependencies/BOOST/include -I$prefix_dependencies/HDF5/include -I$prefix_dependencies/LIBHILBERT/include  $lin_alg_inc -I$prefix_dependencies/BLITZ/include -I$prefix_dependencies/ALGOIM/include  -I$prefix_dependencies/SUITESPARSE/include -I$prefix_dependencies/CATALYST/include/catalyst-2.0 " >> example.mk
