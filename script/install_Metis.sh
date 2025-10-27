@@ -16,9 +16,9 @@ tar -xf METIS_master.tar.gz
 cd METIS
 make distclean
 perl -ni.old -e 'print;if ($.==9) {print "target_link_libraries(metis -lGKlib)\n"}' libmetis/CMakeLists.txt
-if [ ! -f $1/METIS/lib/libGKlib.so  ]; then
-	if [ -f $1/METIS/lib/libGKlib.so.0  ]; then
-		ln -s $1/METIS/lib/libGKlib.so.0  $1/METIS/lib/libGKlib.so
+if [ ! -f $1/METIS/lib/libGKlib.dylib  ]; then
+	if [ -f $1/METIS/lib/libGKlib.0.dylib  ]; then
+		ln -s $1/METIS/lib/libGKlib.0.dylib  $1/METIS/lib/libGKlib.dylib
 	fi
 fi
 
