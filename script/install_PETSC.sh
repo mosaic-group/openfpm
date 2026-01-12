@@ -59,49 +59,14 @@ else
   mpi_dir=$(dirname "$(dirname "$(which mpic++)")")
 fi
 
+configure_options="$configure_options --with-blas-lib=$1/OPENBLAS/lib/libopenblas.a --with-lapack-lib=$1/OPENBLAS/lib/libopenblas.a --with-suitesparse=yes --with-suitesparse-dir=$1/SUITESPARSE "
 
-configure_options="$configure_options --with-blas-lib=$1/OPENBLAS/lib/libopenblas.a --with-lapack-lib=$1/OPENBLAS/lib/libopenblas.a"
-
-echo "Testing if PETSC work with SUITESPARSE"
-configure_options2="$configure_options --with-suitesparse=yes --with-suitesparse-dir=$1/SUITESPARSE "
+configure_options2="$configure_options --download-scalapack --download-mumps --download-superlu_dist --download-hypre "
 test_configure_options
 
 if [ $error -eq 0 ]; then
-  echo "SUITESPARSE work with PETSC"
-  configure_options="$configure_options --with-suitesparse=yes --with-suitesparse-dir=$1/SUITESPARSE "
-fi
-
-configure_options2="$configure_options --download-scalapack"
-test_configure_options
-
-if [ $error -eq 0 ]; then
-  echo "SCALAPACK work with PETSC"
-  configure_options="$configure_options --download-scalapack "
-fi
-
-configure_options2="$configure_options --download-mumps"
-test_configure_options
-
-if [ $error -eq 0 ]; then
-  echo "MUMPS work with PETSC"
-  configure_options="$configure_options --download-mumps"
-fi
-
-echo "Testing if PETSC work with SUPERLU"
-configure_options2="$configure_options --download-superlu_dist "
-test_configure_options
-
-if [ $error -eq 0 ]; then
-  echo "SUPERLU work with PETSC"
-  configure_options="$configure_options --download-superlu_dist "
-fi
-
-configure_options2="$configure_options --download-hypre"
-test_configure_options
-
-if [ $error -eq 0 ]; then
-  echo "HYPRE work with PETSC"
-  configure_options="$configure_options --download-hypre"
+	  echo "SCALAPACK, MUMPS, SUPERLU, HYPRE work with PETSC"
+	    configure_options="$configure_options --download-scalapack --download-mumps --download-superlu_dist --download-hypre "
 fi
 
 rm -rf petsc-3.23.7
