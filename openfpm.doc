@@ -32,13 +32,13 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "OpenFPM_pdata"
+PROJECT_NAME           = "OpenFPM"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = 4.1.0
+PROJECT_NUMBER         = 5.2.0
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -743,7 +743,7 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = src openfpm_data/src openfpm_vcluster/src openfpm_devices/src openfpm_numerics/src openfpm_io/src  example
+INPUT                  = src openfpm_pdata/src openfpm_data/src openfpm_vcluster/src openfpm_devices/src openfpm_numerics/src openfpm_io/src  example
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -812,7 +812,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = src openfpm_data/src openfpm_io/src openfpm_vcluster/src openfpm_numerics/src openfpm_devices/src example
+EXAMPLE_PATH           = src openfpm_pdata/src openfpm_data/src openfpm_io/src openfpm_vcluster/src openfpm_numerics/src openfpm_devices/src example
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1160,7 +1160,7 @@ GENERATE_DOCSET        = NO
 # The default value is: Doxygen generated docs.
 # This tag requires that the tag GENERATE_DOCSET is set to YES.
 
-DOCSET_FEEDNAME        = "OpenFPM pdata"
+DOCSET_FEEDNAME        = "OpenFPM"
 
 # This tag specifies a string that should uniquely identify the documentation
 # set bundle. This should be a reverse domain-name style string, e.g.
