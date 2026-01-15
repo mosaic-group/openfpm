@@ -22,6 +22,12 @@ if [ ! -f $1/METIS/lib/libGKlib.dylib  ]; then
 	fi
 fi
 
+if [ ! -f $1/METIS/lib/libGKlib.so  ]; then
+        if [ -f $1/METIS/lib/libGKlib.so.0  ]; then
+                ln -s $1/METIS/lib/libGKlib.so.0  $1/METIS/lib/libGKlib.so
+	fi
+fi
+
 make config shared=1 i64=1 r64=1 cc=$3 prefix=$1/METIS gklib_path=$1/METIS
 make -j $2
 make install
