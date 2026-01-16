@@ -1,10 +1,9 @@
-/*! \page Numerics Odeint SPH Dam break simulation with Dynamic load balacing on Multi-GPU
+/*! \page Numerics_Odeint_SPH_GPU OdeInt SPH dam break simulation on Multi-GPU
  *
  *
  * [TOC]
  *
  *
- * # SPH with Dynamic load Balancing on GPU # {#SPH_dlb_gpu}
  *
  *
  * This example show the classical SPH Dam break simulation with load balancing and dynamic load balancing. The main difference with
@@ -610,6 +609,7 @@ real_number calc_deltaT(particles & vectorDist, real_number ViscDtMax)
 	return dt;
 }
 
+//! \cond [mark_to_remove_kernel] \endcond
 template<typename vector_dist_type>
 __global__ void checkPosPrpLimits_ker(vector_dist_type vectorDist)
 {
@@ -631,6 +631,7 @@ __global__ void checkPosPrpLimits_ker(vector_dist_type vectorDist)
 		vectorDist.template getProp<RHO>(p) < RhoMin || vectorDist.template getProp<RHO>(p) > RhoMax)
 		{vectorDist.template getProp<RED>(p) = 1;}
 }
+//! \cond [mark_to_remove_kernel] \endcond
 
 size_t cnt = 0;
 
@@ -644,8 +645,9 @@ void checkPosPrpLimits(particles & vectorDist)
 	CUDA_LAUNCH(checkPosPrpLimits_ker,part,vectorDist.toKernel());
 
 	// remove the particles marked
+	//! \cond [remove_marked_part] \endcond
 	remove_marked<RED>(vectorDist);
-
+	//! \cond [remove_marked_part] \endcond
 	// increment the iteration counter
 	cnt++;
 }

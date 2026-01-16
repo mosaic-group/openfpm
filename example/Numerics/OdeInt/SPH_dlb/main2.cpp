@@ -1,11 +1,10 @@
 /*!
- * \page Numerics Odeint SPH Dam break simulation with Dynamic load balacing
+ * \page Numerics_Odeint_SPH OdeInt SPH dam break simulation
  *
  *
  * [TOC]
  *
  *
- * # SPH with Dynamic load Balancing # {#SPH_dlb}
  *
  *
  * This example show the classical SPH Dam break simulation with Load Balancing and Dynamic load balancing. With
@@ -71,7 +70,7 @@
 //! \cond [inclusion] \endcond
 
 /*!
- * \page Numerics Odeint SPH Dam break simulation with Dynamic load balacing
+ * \page Numerics_Odeint_SPH OdeInt SPH dam break simulation
  *
  * ## SPH simulation {#sph_odeint_parameters}
  *
@@ -266,7 +265,7 @@ struct ModelCustom
 /*! \cond [model custom] \endcond */
 
 /*!
- * \page Numerics Odeint SPH Dam break simulation with Dynamic load balacing
+ * \page Numerics_Odeint_SPH OdeInt SPH dam break simulation
  *
  * ### Equation of state {#sph_odeint_equation_state}
  *
@@ -300,7 +299,7 @@ inline void EqState(vector_dist_type & vectorDist)
 /*! \cond [eq_state_and_ker] \endcond */
 
 /*!
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * ### Cubic SPH kernel and derivatives {#sph_odeint_kernel}
  *
@@ -332,7 +331,7 @@ inline double Wab(double r)
 /*! \cond [kernel_sph] \endcond */
 
 /*!
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * This function define the gradient of the Cubic kernel function \f$ W_{ab} \f$.
  *
@@ -375,7 +374,7 @@ inline void DWab(Point<3,double> & dx, Point<3,double> & DW, double r, bool prin
 /*! \cond [kernel_sph_der] \endcond */
 
 /*!
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * ### Tensile correction {#sph_odeint_tensile}
  *
@@ -427,7 +426,7 @@ inline double Tensile(double r, double rhoa, double rhob, double prs1, double pr
 
 /*!
  *
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * ### Viscous term {#sph_odeint_viscous}
  *
@@ -462,7 +461,7 @@ inline double Pi(const Point<3,double> & dr, double rr2, Point<3,double> & dv, d
 
 /*!
  *
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * ### Force calculation {#e7_force_calc}
  *
@@ -624,7 +623,7 @@ template<typename CellList> inline void calc_forces(vector_dist_type & vectorDis
 
 /*!
  *
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * ### Integration and dynamic time integration {#e7_delta_time_t}
  *
@@ -674,7 +673,7 @@ void max_acceleration_and_velocity(vector_dist_type & vectorDist, double & max_a
 
 /*!
  *
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * In this example we are using Dynamic time-stepping. The Dynamic time stepping is
  * calculated with the Courant-Friedrich-Lewy condition. See Monaghan 1992 "Smoothed Particle Hydrodynamic"
@@ -804,7 +803,7 @@ struct RHSFunctor
 
 /*!
  *
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * This function perform verlet integration accordingly to the Verlet time stepping scheme
  *
@@ -880,7 +879,7 @@ void checkPosPrpLimits(vector_dist_type & vectorDist)
 
 /*!
  *
- * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
  *
  * ### Probes/sensors {#sph_odeint_prob_sens}
  *
@@ -983,7 +982,7 @@ int main(int argc, char* argv[])
 {
 	/*!
 	 *
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 * ## Main function {#sph_odeint_main}
 	 *
@@ -1024,7 +1023,7 @@ int main(int argc, char* argv[])
 	//! \cond [Initialization and parameters] \endcond
 
 	/*!
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 * ### Vector create {#sph_odeint_vcreate}
 	 *
@@ -1065,7 +1064,7 @@ int main(int argc, char* argv[])
 	//! \cond [vector inst] \endcond
 
 	/*!
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 * ### Draw particles and initialization ## {#sph_odeint_draw_part_init}
 	 *
@@ -1153,7 +1152,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw fluid] \endcond
 
 	/*!
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 * ### Draw Recipient ###
 	 *
@@ -1215,7 +1214,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw recipient] \endcond
 
 	/*!
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 *  ### Draw Obstacle ###
 	 *
@@ -1261,7 +1260,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw obstacle] \endcond
 
 	/*!
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 * ## Load balancing and Dynamic load balancing ##
 	 *
@@ -1359,7 +1358,7 @@ int main(int argc, char* argv[])
 	// Evolve
 
 	/*!
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 * ## Main Loop ##
 	 *
@@ -1553,7 +1552,7 @@ int main(int argc, char* argv[])
 
 	/*!
 	 *
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 * ## Finalize ## {#finalize_e0_sim}
 	 *
@@ -1571,7 +1570,7 @@ int main(int argc, char* argv[])
 	//! \cond [finalize] \endcond
 
 	/*!
-	 * \page SPH_dlb SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_Odeint_SPH OdeInt SPH Dam break simulation
 	 *
 	 * ## Full code ## {#code_sph_odeint_dlb}
 	 *

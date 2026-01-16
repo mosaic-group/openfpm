@@ -1,11 +1,10 @@
 /*!
- * \page Numerics expression SPH Dam break simulation with Dynamic load balacing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  *
  * [TOC]
  *
  *
- * # Numerics expression SPH Dam break simulation with Dynamic load balacing # {#SPH_dlb}
  *
  *
  * This example show the classical SPH Dam break simulation with Load Balancing and Dynamic load balancing. With
@@ -69,7 +68,7 @@
 //! \cond [inclusion] \endcond
 
 /*!
- * \page SPH_dlb Numerics expression SPH Dam break simulation with Dynamic load balacing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * ## SPH simulation {#sph_expression_parameters}
  *
@@ -256,7 +255,7 @@ struct ModelCustom
 /*! \cond [model custom] \endcond */
 
 /*!
- * \page SPH_dlb Numerics expression SPH Dam break simulation with Dynamic load balacing
+ * \page  Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * ### Equation of state {#sph_expression_equation_state}
  *
@@ -290,7 +289,7 @@ inline void EqState(vector_dist_type & vectorDist)
 /*! \cond [eq_state_and_ker] \endcond */
 
 /*!
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * ### Cubic SPH kernel and derivatives {#sph_expression_kernel}
  *
@@ -322,7 +321,7 @@ inline double Wab(double r)
 /*! \cond [kernel_sph] \endcond */
 
 /*!
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * This function define the gradient of the Cubic kernel function \f$ W_{ab} \f$.
  *
@@ -365,7 +364,7 @@ inline void DWab(Point<3,double> & dx, Point<3,double> & DW, double r, bool prin
 /*! \cond [kernel_sph_der] \endcond */
 
 /*!
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * ### Tensile correction {#sph_expression_tensile}
  *
@@ -417,7 +416,7 @@ inline double Tensile(double r, double rhoa, double rhob, double prs1, double pr
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * ### Viscous term {#sph_expression_viscous}
  *
@@ -452,7 +451,7 @@ inline double Pi(const Point<3,double> & dr, double rr2, Point<3,double> & dv, d
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * ### Force calculation {#e7_force_calc}
  *
@@ -614,7 +613,7 @@ template<typename CellList> inline void calc_forces(vector_dist_type & vectorDis
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * ### Integration and dynamic time integration {#e7_delta_time_t}
  *
@@ -664,7 +663,7 @@ void max_acceleration_and_velocity(vector_dist_type & vectorDist, double & max_a
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * In this example we are using Dynamic time-stepping. The Dynamic time stepping is
  * calculated with the Courant-Friedrich-Lewy condition. See Monaghan 1992 "Smoothed Particle Hydrodynamic"
@@ -709,7 +708,7 @@ double calc_deltaT(vector_dist_type & vectorDist, double ViscDtMax)
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * This function perform verlet integration accordingly to the Verlet time stepping scheme
  *
@@ -899,7 +898,7 @@ void euler_int(vector_dist_type & vectorDist, double dt)
 
 /*!
  *
- * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+ * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
  *
  * ### Probes/sensors {#sph_expression_prob_sens}
  *
@@ -1002,7 +1001,7 @@ int main(int argc, char* argv[])
 {
 	/*!
 	 *
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 * ## Main function {#sph_expression_main}
 	 *
@@ -1043,7 +1042,7 @@ int main(int argc, char* argv[])
 	//! \cond [Initialization and parameters] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 * ### Vector create {#sph_expression_vcreate}
 	 *
@@ -1084,7 +1083,7 @@ int main(int argc, char* argv[])
 	//! \cond [vector inst] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 * ### Draw particles and initialization ## {#sph_expression_draw_part_init}
 	 *
@@ -1172,7 +1171,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw fluid] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 * ### Draw Recipient ###
 	 *
@@ -1234,7 +1233,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw recipient] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 *  ### Draw Obstacle ###
 	 *
@@ -1280,7 +1279,7 @@ int main(int argc, char* argv[])
 	//! \cond [draw obstacle] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 * ## Load balancing and Dynamic load balancing ##
 	 *
@@ -1378,7 +1377,7 @@ int main(int argc, char* argv[])
 	// Evolve
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 * ## Main Loop ##
 	 *
@@ -1475,7 +1474,7 @@ int main(int argc, char* argv[])
 
 	/*!
 	 *
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 * ## Finalize ## {#finalize_e0_sim}
 	 *
@@ -1493,7 +1492,7 @@ int main(int argc, char* argv[])
 	//! \cond [finalize] \endcond
 
 	/*!
-	 * \page Numerics expression SPH Dam break simulation with Dynamic load balancing
+	 * \page Numerics_expression_SPH Numerics expression SPH dam break simulation
 	 *
 	 * ## Full code ## {#code_sph_expression_dlb}
 	 *
