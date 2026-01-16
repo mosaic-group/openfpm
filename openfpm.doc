@@ -743,7 +743,7 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = src openfpm_pdata/src openfpm_data/src openfpm_vcluster/src openfpm_devices/src openfpm_numerics/src openfpm_io/src  example
+INPUT                  = openfpm_pdata/src openfpm_data/src openfpm_vcluster/src openfpm_devices/src openfpm_numerics/src openfpm_io/src  example
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -812,7 +812,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = src openfpm_pdata/src openfpm_data/src openfpm_io/src openfpm_vcluster/src openfpm_numerics/src openfpm_devices/src example
+EXAMPLE_PATH           = openfpm_pdata/src openfpm_data/src openfpm_io/src openfpm_vcluster/src openfpm_numerics/src openfpm_devices/src example
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1541,7 +1541,7 @@ EXTRA_SEARCH_MAPPINGS  =
 # If the GENERATE_LATEX tag is set to YES doxygen will generate LaTeX output.
 # The default value is: YES.
 
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. If a
 # relative path is entered the value of OUTPUT_DIRECTORY will be put in front of

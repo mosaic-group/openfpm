@@ -21,7 +21,7 @@
  * First, we initialize and generate sparse grid of solid phase. In this example, an indicator funtion (color field) 
  * would also be sufficient for defining the diffusion domain as we do not scale any parameter by their distance to the
  * surface here, as opposed to the inhomogeneous diffusion in the CaCO\f$_3\f$ fluid phase, 
- * see @ref 9_inhomogeneous_diffusion_porous_catalyst. 
+ * see @ref 9_inhomogeneous_diffusion_porous_catalyst_CaCO3. 
  * We anyways load the SDF as this gives us more flexibility when we want to extend the code towards applications 
  * for which we need the distance to the surface.
  *

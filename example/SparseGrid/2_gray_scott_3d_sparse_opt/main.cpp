@@ -22,7 +22,7 @@
  *
  * \see \ref Grid_3_gs_3D
  *
- * This example is the same as \ref e3_gs_gray_scott_sparse the difference is optimizing for speed.
+ * This example is the same as \ref 1_gray_scott_3d_sparse the difference is optimizing for speed.
  *
  * Two optimization has been done. The first is to change the layout to struct of arrays defining the grid with
  *
@@ -278,7 +278,7 @@ int main(int argc, char* argv[])
 	 *
 	 * # Full code # {#code}
 	 *
-	 * \include SparseGrid/1_gray_scott_3d_sparse_opt/main.cpp
+	 * \include SparseGrid/2_gray_scott_3d_sparse_opt/main.cpp
 	 *
 	 */
 }

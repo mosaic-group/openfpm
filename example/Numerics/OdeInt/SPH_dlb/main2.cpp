@@ -53,7 +53,7 @@
  * we also include DrawParticles that has nice utilities to draw particles in parallel accordingly
  * to simple shapes
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp inclusion
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp inclusion
  *
  */
 
@@ -108,7 +108,7 @@
  * Based on the equation
  * reported before several constants must be defined.
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp sim parameters
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp sim parameters
  *
  */
 
@@ -273,7 +273,7 @@ struct ModelCustom
  * This function implement the formula 3 in the set of equations. It calculate the
  * pressure of each particle based on the local density of each particle.
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp eq_state_and_ker
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp eq_state_and_ker
  *
  */
 
@@ -309,7 +309,7 @@ inline void EqState(vector_dist_type & vectorDist)
  *
  * \f$ \begin{cases} 1.0 - \frac{3}{2} q^2 + \frac{3}{4} q^3 & 0 < q < 1 \\ (2 - q)^3 & 1 < q < 2 \\ 0 & q > 2 \end{cases} \f$
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp kernel_sph
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp kernel_sph
  *
  */
 
@@ -340,7 +340,7 @@ inline double Wab(double r)
  *
  * \f$ \beta = \begin{cases} (c_1 q + d_1 q^2) & 0 < q < 1 \\ c_2 (2 - q)^2  & 1 < q < 2 \end{cases} \f$
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp kernel_sph_der
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp kernel_sph_der
  *
  */
 
@@ -385,7 +385,7 @@ inline void DWab(Point<3,double> & dx, Point<3,double> & DW, double r, bool prin
  * particles to get too close like the Lennard-Jhonned potential at atomistic level. A good
  * reference is the Monaghan paper "SPH without a Tensile Instability"
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp tensile_term
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp tensile_term
  *
  *
  */
@@ -433,7 +433,7 @@ inline double Tensile(double r, double rhoa, double rhob, double prs1, double pr
  *
  * This function implement the viscous term \f$ \Pi_{ab} \f$
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp viscous_term
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp viscous_term
  *
  *
  */
@@ -468,7 +468,7 @@ inline double Pi(const Point<3,double> & dr, double rr2, Point<3,double> & dv, d
  *
  * Calculate forces. It calculate equation 1 and 2 in the set of formulas
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp calc_forces
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp calc_forces
  *
  *
  */
@@ -631,7 +631,7 @@ template<typename CellList> inline void calc_forces(vector_dist_type & vectorDis
  * This function calculate the Maximum acceleration and velocity across the particles.
  * It is used to calculate a dynamic time-stepping.
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp max_acc_vel
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp max_acc_vel
  *
  *
  */
@@ -688,7 +688,7 @@ void max_acceleration_and_velocity(vector_dist_type & vectorDist, double & max_a
  * \f$  \delta t_{cv} = min \frac{h}{c_s + max \left| \frac{hv_{ab} \cdot r_{ab}}{r_{ab}^2} \right|} \f$
  *
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp dyn_stepping
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp dyn_stepping
  *
  *
  */
@@ -826,7 +826,7 @@ struct RHSFunctor
  * domain or their density go dangerously out of range. If a particle go out of range is removed
  * from the simulation
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp checkPosPrpLimits
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp checkPosPrpLimits
  *
  *
  */
@@ -896,7 +896,7 @@ void checkPosPrpLimits(vector_dist_type & vectorDist)
  *  to create a set of "probe" particles
  *
  *
- * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp sens_press
+ * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp sens_press
  *
  *
  */
@@ -992,7 +992,7 @@ int main(int argc, char* argv[])
 	 *
 	 * \see \ref e0_s_init
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp Initialization and parameters
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp Initialization and parameters
 	 *
 	 */
 
@@ -1053,8 +1053,8 @@ int main(int argc, char* argv[])
 	 * must be decomposed and \f$ N_p \f$ is the number of processors. (The concept
 	 * of sub-sub-domain will be explained leter)
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp vector inst
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp vector_dist_def
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp vector inst
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp vector_dist_def
 	 *
 	 */
 
@@ -1094,7 +1094,7 @@ int main(int argc, char* argv[])
 	 * <img src="http://ppmcore.mpi-cbg.de/web/images/examples/7_SPH_dlb/fluid.jpg"/>
 	 * \endhtmlonly
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp draw fluid
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp draw fluid
 	 *
 	 */
 
@@ -1171,7 +1171,7 @@ int main(int argc, char* argv[])
 	 * to \f$ \rho_{0} \f$. It will be update over time according to equation (3) to keep
 	 * the particles confined.
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp draw recipient
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp draw recipient
 	 *
 	 */
 
@@ -1226,7 +1226,7 @@ int main(int argc, char* argv[])
 	 * <img src="http://ppmcore.mpi-cbg.de/web/images/examples/7_SPH_dlb/obstacle.jpg"/>
 	 * \endhtmlonly
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp draw obstacle
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp draw obstacle
 	 *
 	 */
 
@@ -1284,7 +1284,7 @@ int main(int argc, char* argv[])
 	 * process a sub-sub-domain is quadratic or linear with the number of
 	 * particles ...). A model look like this.
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp model custom
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp model custom
 	 *
 	 *  Setting the the computational cost on sub-sub-domains is performed running
 	 *  across the particles. For each one of them, it is calculated on which sub-sub-domain it belong.
@@ -1333,7 +1333,7 @@ int main(int argc, char* argv[])
 	 * </div>
 	 * \endhtmlonly
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp load balancing
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp load balancing
 	 *
 	 * \htmlonly
 	 * <img src="http://ppmcore.mpi-cbg.de/web/images/examples/7_SPH_dlb/load_balanced_particles.jpg"/>
@@ -1368,7 +1368,7 @@ int main(int argc, char* argv[])
 	 * and velocity. After 200 time-step we do a re-balancing. We save the configuration
 	 * and we calculate the pressure on the probe position every 0.01 seconds
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp main loop
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp main loop
 	 *
 	 */
 
@@ -1560,7 +1560,7 @@ int main(int argc, char* argv[])
 	 *
 	 *  At the very end of the program we have always de-initialize the library
 	 *
-	 * \snippet example/Numerics/Odeint/SPH_dlb/main2.cpp finalize
+	 * \snippet example/Numerics/OdeInt/SPH_dlb/main2.cpp finalize
 	 *
 	 */
 
@@ -1575,7 +1575,7 @@ int main(int argc, char* argv[])
 	 *
 	 * ## Full code ## {#code_sph_odeint_dlb}
 	 *
-	 * \include example/Numerics/Odeint/SPH_dlb/main2.cpp
+	 * \include example/Numerics/OdeInt/SPH_dlb/main2.cpp
 	 *
 	 */
 }

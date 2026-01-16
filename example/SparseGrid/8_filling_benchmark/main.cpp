@@ -10,7 +10,7 @@
  *
  * [TOC]
  *
- * # Solving a gray scott-system in 3D using sparse grids optimized on CPU # {#e3_gs_gray_scott_opt}
+ * # Solving a gray scott-system in 3D using sparse grids optimized on CPU # {#1_gray_scott_3d_sparse}
  *
  * This example show how to solve a Gray-Scott system in 3D using sparse grids in an optimized way
  *
@@ -28,7 +28,7 @@
  *
  * Two optimization has been done. The first is to change the layout to struct of arrays defining the grid with
  *
- * \snippet SparseGrid/1_gray_scott_3d_sparse_opt/main.cpp grid definition
+ * \snippet SparseGrid/2_gray_scott_3d_sparse_opt/main.cpp grid definition
  *
  * The second is using the function **conv_cross2** to calculate the right-hand-side
  * this function can be used to do a convolution that involve points in a cross stencil like in figure that involve
@@ -62,11 +62,11 @@
  *
  * The lambda function is defined as
  *
- * \snippet SparseGrid/1_gray_scott_3d_sparse_opt/main.cpp lambda
+ * \snippet SparseGrid/2_gray_scott_3d_sparse_opt/main.cpp lambda
  *
  * and used in the body loop
  *
- * \snippet SparseGrid/1_gray_scott_3d_sparse_opt/main.cpp body
+ * \snippet SparseGrid/2_gray_scott_3d_sparse_opt/main.cpp body
  *
  * To note that instead of copy we split the properties where we are acting at every iteration
  *
@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
 	 *
 	 * Deinitialize the library
 	 *
-	 * \snippet SparseGrid/1_gray_scott_3d_sparse_opt/main.cpp finalize
+	 * \snippet SparseGrid/2_gray_scott_3d_sparse_opt/main.cpp finalize
 	 *
 	 */
 
@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
 	 *
 	 * # Full code # {#code}
 	 *
-	 * \include SparseGrid/1_gray_scott_3d_sparse_opt/main.cpp
+	 * \include SparseGrid/2_gray_scott_3d_sparse_opt/main.cpp
 	 *
 	 */
 }

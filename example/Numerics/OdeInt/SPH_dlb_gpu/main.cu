@@ -32,12 +32,12 @@
  *
  * On SPH we have the necessity to remove particles that go out of bound. OpenFPM provide the function \b remove_marked \b .
  *
- * \snippet example/Numerics/Odeint/SPH_dlb_gpu/main.cu remove_marked_part
+ * \snippet example/Numerics/OdeInt/SPH_dlb_gpu/main.cu remove_marked_part
  *
  * where vectorDist is the vector_dist_gpu red is the property that mark which particle must be removed. We mark the particle to be removed in the function kernel
  * We check if the particle go out of the region of interest or their density go critically far from the rest density
  *
- * \snippet example/Numerics/Odeint/SPH_dlb_gpu/main.cu mark_to_remove_kernel
+ * \snippet example/Numerics/OdeInt/SPH_dlb_gpu/main.cu mark_to_remove_kernel
  *
  * ## Macro CUDA_LAUNCH
  *
@@ -54,7 +54,7 @@
  * feature in action). All the openfpm GPU example and CUDA example can run on CPU if they use CUDA_LAUNCH as macro. We are planning to support
  * AMD GPUs as well using this system.
  *
- * \include example/Numerics/Odeint/SPH_dlb_gpu/main.cu
+ * \include example/Numerics/OdeInt/SPH_dlb_gpu/main.cu
  *
  */
 

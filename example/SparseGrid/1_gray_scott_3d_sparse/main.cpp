@@ -19,7 +19,7 @@
  *
  * [TOC]
  *
- * # Solving a gray scott-system in 3D using Sparse grids on GPU optimized # {#e3_gs_gray_scott_sparse_gpu_opt}
+ * # Solving a gray scott-system in 3D using Sparse grids on GPU optimized # {#1_gray_scott_3d_sparse:}
  *
  * This example show how to solve a Gray-Scott system in 3D using sparse grids on gpu (optimized). The problem is the same as \ref Grid_3_gs_3D
  *
