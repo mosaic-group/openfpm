@@ -66,7 +66,7 @@
  *
  * These are the header files that we need to include:
  *
- * @snippet example/Numerics/OdeInt/main.cpp Ode1Include
+ * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp Ode1Include
  *
  */
 //! @cond [Ode1Include] @endcond
@@ -94,7 +94,7 @@
  * dist_vector_type as the 2d openfpm distributed vector type
  * dist_vector_type as the 2d openfpm distributed subset vector type
  *
- * @snippet example/Numerics/OdeInt/main.cpp Init1pm
+ * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp Init1pm
  *
  */
 
@@ -137,7 +137,7 @@ typedef vector_dist_subset<2, double, Property_type> dist_vector_subset_type;
  *
  *
  *
- * @snippet example/Numerics/OdeInt/main.cpp RHS1Functor
+ * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp RHS1Functor
  *
  */
 //! @cond [RHS1Functor] @endcond
@@ -193,7 +193,7 @@ struct RHSFunctor
  * We start with
  * * Initializing OpenFPM
  *
- * @snippet example/Numerics/OdeInt/main.cpp init1Particles
+ * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp init1Particles
  *
  */
 //! @cond [init1Particles] @endcond
@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
      * We create a particle distribution we certain rCut for the domain [-1,-1] to [1,1].
      *
      * Also, we fill the initial concentration as C_1(x=0,y>0 & y<0.5,t=0)=1,C_2(x=0,y<0 & y>-0.5,t=0)=1 and 0 everywhere else.
-     * @snippet example/Numerics/OdeInt/main.cpp init1Subset
+     * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp init1Subset
      *
      */
     //! @cond [init1Subset] @endcond
@@ -270,7 +270,7 @@ int main(int argc, char* argv[]) {
      * Further, We cast the Global Pointers so that Odeint RHS functor can recognize our openfpm distributed structure.
      *
      *
-     * @snippet example/Numerics/OdeInt/main.cpp Pointer1Init
+     * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp Pointer1Init
      */
     //! @cond [Pointer1Init] @endcond
     // Now we initialize the grid with a filled circle. Outside the circle, the value of Phi_0 will be -1, inside +1.
@@ -291,7 +291,7 @@ int main(int argc, char* argv[]) {
      *
      * Here we create two dcpse based operators and alias the particle properties.
      *
-     * @snippet example/Numerics/OdeInt/main.cpp DCPSE1Alias
+     * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp DCPSE1Alias
      *
      */
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +324,7 @@ int main(int argc, char* argv[]) {
      *
      * Also, we create the state type compatible with odeint and initialize the concentration in it.
      *
-     * @snippet example/Numerics/OdeInt/main.cpp Odeint1I
+     * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp Odeint1I
      *
      */
     //! @cond [Odeint1I] @endcond
@@ -360,7 +360,7 @@ int main(int argc, char* argv[]) {
     *
     * After the time loop. we deallocate the DCPSE operators and finalize the library.
     *
-    * @snippet example/Numerics/OdeInt/main.cpp OdeintT
+    * @snippet example/Numerics/OdeInt/Advection-Diffusion/main.cpp OdeintT
     *
     */
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -411,5 +411,5 @@ int main(int argc, char* argv[]) {
  *
  * ## Full code ## {#odeint_c_full}
  *
- * @include example/Numerics/OdeInt/main.cpp
+ * @include example/Numerics/OdeInt/Advection-Diffusion/main.cpp
  */
