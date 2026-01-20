@@ -2,9 +2,16 @@
 // Created by Abhinav Singh on 15.03.20.
 //
 
+
 /*!
- * @file 2D_ActiveFluid/main.cpp
- * @page ActiveFluid ActiveFluid 
+ * \file Two_dim_ActiveFluid/main.cpp
+ * \page ActiveFluid Active Fluid 
+ *
+ * \subpage Two_dim_ActiveFluid
+ */
+
+/*!
+ * \page Two_dim_ActiveFluid 2D Active Fluid
  * 
  * ##A Two Dimensional Active Fluid Solver##
  *
@@ -41,13 +48,13 @@
  */
 
 /**
- * @page ActiveFluid ActiveFluid 
+ * \page Two_dim_ActiveFluid 2D Active Fluid 
  *
  * ## Including the headers ## {#active_c1_include}
  *
  * These are the header files that we need to include:
  *
- * @snippet example/Numerics/2D_ActiveFluid/main.cpp active1Include
+ * @snippet example/Numerics/Two_dim_ActiveFluid/main.cpp active1Include
  *
  */
 //! @cond [active1Include] @endcond
@@ -65,7 +72,7 @@
 //! @cond [active1Include] @endcond
 
 /**
- * @page ActiveFluid ActiveFluid 
+ * \page Two_dim_ActiveFluid 2D Active Fluid 
  *
  * ## Initialization of the global parameters## {#active_c_init}
  *
@@ -80,7 +87,7 @@
  * dist_vector_type as the 2d openfpm distributed vector type
  * dist_vector_type as the 2d openfpm distributed subset vector type
  *
- * @snippet example/Numerics/2D_ActiveFluid/main.cpp Init1active
+ * @snippet example/Numerics/Two_dim_ActiveFluid/main.cpp Init1active
  *
  */
 
@@ -109,7 +116,7 @@ typedef vector_dist_ws<2, double,Activegels> vector_type;
 typedef vector_dist_subset<2, double, Activegels> vector_type2;
 //! @cond [Init1active] @endcond
 /**
- * @page ActiveFluid ActiveFluid 
+ * \page Two_dim_ActiveFluid 2D Active Fluid 
  *
  * ## Creating the RHS Functor## {#active_c1_rhs}
  *
@@ -131,7 +138,7 @@ typedef vector_dist_subset<2, double, Activegels> vector_type2;
  * We do our computations as required.
  * Then we copy back the output into the state_type dxdt)
  *
- * @snippet example/Numerics/2D_ActiveFluid/main.cpp RHSActiveFunctor
+ * @snippet example/Numerics/Two_dim_ActiveFluid/main.cpp RHSActiveFunctor
  *
  */
 //! @cond [RHSActiveFunctor] @endcond
@@ -187,7 +194,7 @@ struct PolarEv
 //! @cond [RHSActiveFunctor] @endcond
 
 /**
- * @page ActiveFluid ActiveFluid 
+ * \page Two_dim_ActiveFluid 2D Active Fluid 
  *
  * ## Creating the Observer Functor## {#ode_c2_obs}
  *
@@ -230,7 +237,7 @@ struct PolarEv
  * We do our computations as required.
  * Then we copy back the output into the state_type dxdt.
  *
- * @snippet example/Numerics/2D_ActiveFluid/main.cpp ActiveObserver2Functor
+ * @snippet example/Numerics/Two_dim_ActiveFluid/main.cpp ActiveObserver2Functor
  *
  */
 //! @cond [ActiveObserver2Functor] @endcond
@@ -581,14 +588,14 @@ struct CalcVelocity
 };
 //! @cond [ActiveObserver2Functor] @endcond
 /**
- * @page ActiveFluid ActiveFluid 
+ * \page Two_dim_ActiveFluid 2D Active Fluid 
  *
  * ## Initializating OpenFPM ## {#Active_c2_initmain}
  *
  * We start with
  * * Initializing OpenFPM
  *
- * @snippet example/Numerics/2D_ActiveFluid/main.cpp ActiveInit
+ * @snippet example/Numerics/Two_dim_ActiveFluid/main.cpp ActiveInit
  *
  */
 //! @cond [ActiveInit] @endcond
@@ -605,7 +612,7 @@ int main(int argc, char* argv[])
         V_err_eps = 5e-4;
         //! @cond [ActiveInit] @endcond
         /**
-         * @page ActiveFluid ActiveFluid 
+         * \page Two_dim_ActiveFluid 2D Active Fluid 
          *
          * ## Creating Particles and assigning subsets ## {#odeint_c2_indices}
          *
@@ -618,7 +625,7 @@ int main(int argc, char* argv[])
 		 *  \cos \big(2\pi (\cos\left(\frac{2 x - L_x}{ L_x}\right)-\sin\left(\frac{2 y - L_y}{ L_y}\right)\big)
 	     * \end{matrix}\right)
          * @f]
-         * @snippet example/Numerics/2D_ActiveFluid/main.cpp initActSubset
+         * @snippet example/Numerics/Two_dim_ActiveFluid/main.cpp initActSubset
          *
          */
         //! @cond [initActSubset] @endcond
@@ -672,7 +679,7 @@ int main(int argc, char* argv[])
         Particles.ghost_get<POLARIZATION,EXTFORCE,DELMU>(SKIP_LABELLING);
         //! @cond [initActSubset] @endcond
          /**
-         * @page ActiveFluid ActiveFluid 
+         * \page Two_dim_ActiveFluid 2D Active Fluid 
          *
          * ## Create the subset, differential operators, steppers and Cast Global Pointers ## {#Active_c2_point}
          *
@@ -681,7 +688,7 @@ int main(int argc, char* argv[])
          *
          *  We create DCPSE based operators and alias the particle properties.
          *
-         * @snippet example/Numerics/2D_ActiveFluid/main.cpp Pointer2Act
+         * @snippet example/Numerics/Two_dim_ActiveFluid/main.cpp Pointer2Act
          *
          */
         //! @cond [Pointer2Act] @endcond
@@ -749,7 +756,7 @@ int main(int argc, char* argv[])
         double V_err = 1, V_err_old;
         double tim=0;
  /**
-    * @page ActiveFluid ActiveFluid 
+    * \page Two_dim_ActiveFluid 2D Active Fluid 
     *
     * ## Calling Odeint ## {#odeint_actc2_1211}
     * We initiliaze the time variable t, step_size dt and final time tf.
@@ -766,7 +773,7 @@ int main(int argc, char* argv[])
     *
     * We finally deallocate the DCPSE operators and finalize the library.
     *
-    * @snippet example/Numerics/2D_ActiveFluid/main.cpp ActintTCall
+    * @snippet example/Numerics/Two_dim_ActiveFluid/main.cpp ActintTCall
     *
     */
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -803,9 +810,9 @@ int main(int argc, char* argv[])
 }
 
 /**
-    * @page ActiveFluid ActiveFluid 
+    * \page Two_dim_ActiveFluid 2D Active Fluid 
  *
  * ## Full code ## {#actint_c2_full}
  *
- * @include example/Numerics/2D_ActiveFluid/main.cpp
+ * @include example/Numerics/Two_dim_ActiveFluid/main.cpp
  */

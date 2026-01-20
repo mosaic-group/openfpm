@@ -3,11 +3,11 @@
 //
 /*!
  *
- * \page 10_heat_conduction_RPC Heat conduction in reticulate porous ceramics using sparse grids on GPU
+ * \page heat_conduction_RPC Heat conduction in reticulate porous ceramics using sparse grids on GPU
  *
  * [TOC]
  *
- * # Solving heat conduction in the image-based geometry of reticulate porous ceramics # {#e10_heat_conduction_RPC_gpu}
+ * # Solving heat conduction in the image-based geometry of reticulate porous ceramics # {#eheat_conduction_RPC_gpu}
  *
  * In this example, we simulate heat conduction in the solid phase of reticulate porous ceramics with heat dissipation at the surface. For the complete image-based simulation pipeline and performance of this simulation, we refer to
  * <a href="https://doi.org/10.1016/j.jocs.2023.102118">J. Stark, I. F. Sbalzarini "An open-source pipeline for solving continuous reaction-diffusion models in image-based geometries of porous media", Journal of Computational Science (2023).</a>

@@ -4,11 +4,11 @@
 
 /*!
  *
- * \page Grid_3_gs_3D_sparse_opt Gray Scott in 3D using sparse grids optimized on CPU
+ * \page Grid_3_gs_3D_sparse_opt Gray Scott in 3D using sparse grids on CPU (Optimized)
  *
  * [TOC]
  *
- * # Solving a gray scott-system in 3D using sparse grids optimized on CPU # {#e3_gs_gray_scott_opt}
+ * # Solving a gray scott-system in 3D using sparse grids on CPU (Optimized) # {#e3_gs_gray_scott_opt}
  *
  * This example show how to solve a Gray-Scott system in 3D using sparse grids in an optimized way
  *
@@ -257,7 +257,7 @@ int main(int argc, char* argv[])
 	//! \cond [time stepping] \endcond
 
 	/*!
-	 * \page Grid_3_gs_3D_sparse_opt Gray Scott in 3D using sparse grids optimized on CPU
+	 * \page Grid_3_gs_3D_sparse_opt Gray Scott in 3D using sparse grids on CPU (Optimized)
 	 *
 	 * ## Finalize ##
 	 *
@@ -274,7 +274,7 @@ int main(int argc, char* argv[])
 	//! \cond [finalize] \endcond
 
 	/*!
-	 * \page Grid_3_gs_3D_sparse_opt Gray Scott in 3D using sparse grids optimized on CPU
+	 * \page Grid_3_gs_3D_sparse_opt Gray Scott in 3D using sparse grids on CPU (Optimized)
 	 *
 	 * # Full code # {#code}
 	 *

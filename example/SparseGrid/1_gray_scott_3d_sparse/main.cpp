@@ -6,6 +6,10 @@
  * \subpage Grid_3_gs_3D_sparse_gpu_opt
  * \subpage Grid_3_gs_3D_sparse_cs
  * \subpage Grid_3_gs_3D_sparse_gpu_cs
+ * \subpage Grid_3_gs_3D_sparse_gpu_cs_opt
+ * \subpage Grid_3_gs_3D_sparse_gpu_cs_exp
+ * \subpage inhomogeneous_diffusion_porous_catalyst_CaCO3
+ * \subpage heat_conduction_RPC
  *
  */
 
@@ -15,7 +19,7 @@
 
 /*!
  *
- * \page Grid_3_gs_3D_sparse Gray Scott in\subpage Grid_3_gs_3D_sparse_opt 3D using sparse grids
+ * \page Grid_3_gs_3D_sparse Gray Scott in 3D using sparse grids on CPU
  *
  * [TOC]
  *
@@ -238,7 +242,7 @@ int main(int argc, char* argv[])
 	//! \cond [time stepping] \endcond
 
 	/*!
-	 * \page Grid_3_gs_3D_sparse Gray Scott in 3D
+	 * \page Grid_3_gs_3D_sparse Gray Scott in 3D using sparse grids on CPU
 	 *
 	 * ## Finalize ##
 	 *
@@ -255,7 +259,7 @@ int main(int argc, char* argv[])
 	//! \cond [finalize] \endcond
 
 	/*!
-	 * \page Grid_3_gs_3D_sparse Gray Scott in 3D
+	 * \page Grid_3_gs_3D_sparse Gray Scott in 3D using sparse grids on CPU
 	 *
 	 * # Full code # {#code}
 	 *

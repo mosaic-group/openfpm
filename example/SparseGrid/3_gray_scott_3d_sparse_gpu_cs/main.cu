@@ -4,7 +4,7 @@
 
 /*!
  *
- * \page Grid_3_gs_3D_sparse_gpu_cs Gray Scott in 3D using sparse grids on gpu in complex geometry
+ * \page Grid_3_gs_3D_sparse_gpu_cs Gray Scott in 3D using sparse grids on GPU in complex geometry
  *
  * [TOC]
  *
@@ -356,7 +356,7 @@ int main(int argc, char* argv[])
 	//! \cond [time stepping] \endcond
 
 	/*!
-	 * \page Grid_3_gs_3D_sparse_gpu_cs Gray Scott in 3D using sparse grids on gpu in complex geometry
+	 * \page Grid_3_gs_3D_sparse_gpu_cs Gray Scott in 3D using sparse grids on GPU in complex geometry
 	 *
 	 * ## Finalize ##
 	 *
@@ -373,7 +373,7 @@ int main(int argc, char* argv[])
 	//! \cond [finalize] \endcond
 
 	/*!
-	 * \page Grid_3_gs_3D_sparse_gpu_cs Gray Scott in 3D using sparse grids on gpu in complex geometry
+	 * \page Grid_3_gs_3D_sparse_gpu_cs Gray Scott in 3D using sparse grids on GPU in complex geometry
 	 *
 	 * # Full code # {#code}
 	 *
