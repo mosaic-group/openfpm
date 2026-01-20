@@ -2,9 +2,11 @@
  *
  * \page Numerics Numerics
  * \subpage PS_CMA_ES
- * \subpage Vortex_in_cell_petsc
+ * \subpage Vortex_in_cell
  * \subpage Odeint
  * \subpage Stokes_flow
+ * \subpage Examples_ClosestPoint
+ * \subpage Examples_SussmanRedistancing
  * \subpage ActiveFluid
  *
  * \page PS_CMA_ES Particle swarm CMA-ES Evolution strategy
@@ -1330,3 +1332,4 @@ int main(int argc, char* argv[])
 }
 
 #endif
+

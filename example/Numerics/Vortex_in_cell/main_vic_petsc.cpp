@@ -1,3 +1,13 @@
+/**
+ * @file Vortex_in_cell/main_vic_petsc.cpp
+ * @page Vortex_in_cell Vortex in cell
+ *
+ * @subpage Vortex_in_cell_petsc
+ * @subpage Vortex_in_cell_petsc_opt
+ *
+ *
+ */
+
 /*! \page Vortex_in_cell_petsc Vortex in Cell 3D
  *
  * # Vortex in Cell 3D ring with ringlets # {#vic_ringlets}

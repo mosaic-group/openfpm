@@ -5,7 +5,7 @@
 
 /*!
  *
- * \page VCluster_2_serial_and_parallel In this example we show how to switch at runtime between serial and parallel
+ * \page VCluster_2_serial_and_parallel Parallel and serial basics
  *
  * [TOC]
  *
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 {
 	/*!
 	 *
-	 * \page VCluster_2_serial_and_parallel In this example we show how to switch at runtime between serial and parallel
+	 * \page VCluster_2_serial_and_parallel Parallel and serial basics
 	 *
 	 *
 	 * ## Initialization {#vcl_2_init}
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
 
 	/*!
 	 *
-	 * \page VCluster_2_serial_and_parallel In this example we show how to switch at runtime between serial and parallel
+	 * \page VCluster_2_serial_and_parallel Parallel and serial basics
 	 *
 	 * ## Serial section {#vcl_2_ser_sect}
 	 *
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 
 	/*!
 	 *
-	 * \page VCluster_2_serial_and_parallel In this example we show how to switch at runtime between serial and parallel
+	 * \page VCluster_2_serial_and_parallel Parallel and serial basics
 	 *
 	 * ## Parallel section {#vcl_2_par_sect}
 	 *
@@ -286,7 +286,7 @@ int main(int argc, char* argv[])
 	}
 
 	/*!
-	 * \page VCluster_2_serial_and_parallel In this example we show how to switch at runtime between serial and parallel
+	 * \page VCluster_2_serial_and_parallel Parallel and serial basics
 	 *
 	 * ## Finalize ##
 	 *

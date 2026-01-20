@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
 }
 
 /**
- * @page example_closest_point ClosestPoint Redistancing
+ * @page example_closest_point_sphere Redistancing a sphere given as indicator function
  * 
  * ## Full code ## {#e2d_c_full}
  * 
