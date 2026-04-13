@@ -9,6 +9,6 @@ BUILDDIR=build
 mkdir -p $BUILDDIR
 cd $BUILDDIR
 echo "cmake ../. -DCMAKE_INSTALL_PREFIX=$1/BLITZ"
-cmake ../. -DCMAKE_INSTALL_PREFIX=$1/BLITZ
+cmake ../. -DCMAKE_INSTALL_PREFIX=$1/BLITZ -DBZ_HAVE_LIBPAPI=OFF
 make -j $2
 make install
