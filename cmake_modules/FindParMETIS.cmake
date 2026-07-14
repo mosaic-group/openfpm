@@ -119,18 +119,38 @@ if(PARMETIS_INCLUDE_DIR AND METIS_INCLUDE_DIR AND
   set(CMAKE_REQUIRED_LIBRARIES
     ${PARMETIS_LIBRARY} ${METIS_LIBRARY} ${MPI_C_LIBRARIES})
 
-  # Build and run test program
-  include(CheckCSourceCompiles)
-  check_c_source_compiles("
+  # Build and run a minimal partitioning problem. Merely linking ParMETIS is
+  # insufficient: idx_t and real_t are configured in metis.h, so a library
+  # built with different widths has the same symbols but an incompatible ABI.
+  include(CheckCSourceRuns)
+  unset(PARMETIS_TEST_RUNS CACHE)
+  check_c_source_runs("
 #include \"mpi.h\"
 #define METIS_EXPORT
 #include \"parmetis.h\"
 int main( int argc, char* argv[] )
 {
-  // FIXME: Find a simple but sensible test for ParMETIS
+  idx_t vtxdist[2] = {0, 1};
+  idx_t xadj[2] = {0, 0};
+  idx_t adjncy[1] = {0};
+  idx_t wgtflag = 0;
+  idx_t numflag = 0;
+  idx_t ncon = 1;
+  idx_t nparts = 1;
+  real_t tpwgts[1] = {(real_t)1.0};
+  real_t ubvec[1] = {(real_t)1.05};
+  idx_t options[3] = {0, 0, 0};
+  idx_t edgecut = 0;
+  idx_t part[1] = {0};
+  MPI_Comm comm = MPI_COMM_WORLD;
+  int status;
+
   MPI_Init( &argc, &argv );
+  status = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, 0, 0,
+    &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options,
+    &edgecut, part, &comm);
   MPI_Finalize();
-  return 0;
+  return status == METIS_OK ? 0 : 1;
 }
 " PARMETIS_TEST_RUNS)
 
@@ -161,4 +181,3 @@ endif()
 
 mark_as_advanced(PARMETIS_INCLUDE_DIR METIS_INCLUDE_DIR
   PARMETIS_LIBRARY METIS_LIBRARY)
-

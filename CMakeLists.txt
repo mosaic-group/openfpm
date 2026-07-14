@@ -110,6 +110,11 @@ if(SE_CLASS2)
 	set(DEFINE_SE_CLASS2 "#define SE_CLASS2")
 endif()
 
+if (CUDA_ON_BACKEND STREQUAL "METAL")
+	set(CMAKE_CXX_STANDARD 17)
+	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 if(SE_CLASS3)
 	set(DEFINE_SE_CLASS3 "#define SE_CLASS3")
 endif()
@@ -159,6 +164,9 @@ else()
 endif()
 
 add_subdirectory(openfpm_devices)
+if (CUDA_ON_BACKEND STREQUAL "METAL")
+	include_directories(${VULKAN_INCLUDE_DIR})
+endif()
 add_subdirectory(openfpm_data)
 add_subdirectory(openfpm_vcluster)
 add_subdirectory(openfpm_io)
@@ -170,6 +178,11 @@ if (ENABLE_NUMERICS)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config_cmake.h.in ${PROJECT_BINARY_DIR}/config/config.h)
+
+if (CUDA_ON_BACKEND STREQUAL "METAL")
+	enable_testing()
+	add_subdirectory(example/Vector/1_gpu_first_step)
+endif()
 
 # WRITE BUILD OPTIONS TO CONFIG FILES. LATER USED TO CREATE example.mk
 if (OPENMP_FOUND)
