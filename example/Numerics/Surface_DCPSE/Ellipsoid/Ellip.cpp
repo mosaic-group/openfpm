@@ -147,9 +147,9 @@ int main(int argc, char * argv[]) {
   auto CurvTensor=getV<CURVT>(particles);
   particles.ghost_get<F,NORMAL,POS>();
   auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
-  SurfaceDerivative_x<NORMAL,decltype(verletList)> Sdx{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
-  SurfaceDerivative_y<NORMAL,decltype(verletList)> Sdy{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
-  SurfaceDerivative_z<NORMAL,decltype(verletList)> Sdz{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_x<NORMAL,decltype(verletList)> Sdx(particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
+  SurfaceDerivative_y<NORMAL,decltype(verletList)> Sdy(particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
+  SurfaceDerivative_z<NORMAL,decltype(verletList)> Sdz(particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
 
   auto Na=Sdx(N[0]),Nb=Sdy(N[0]),Nc=Sdz(N[0]),
        Nd=Sdx(N[1]),Ne=Sdy(N[1]),Nf=Sdz(N[1]),

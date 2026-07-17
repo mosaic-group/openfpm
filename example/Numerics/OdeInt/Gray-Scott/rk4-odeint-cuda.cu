@@ -1,3 +1,5 @@
+#ifdef __NVCC__
+
 #include "config.h"
 #include <type_traits>
 #include <cstring>
@@ -16,7 +18,6 @@ void ExponentialGPU( const state_type &x , state_type &dxdt , const double t )
     std::cout << "Work " << t << std::endl;
     dxdt.data.get<0>() = x.data.get<0>();
 }
-
 
 int main(int argc, char* argv[])        
         {
@@ -87,3 +88,12 @@ int main(int argc, char* argv[])
     return 0;
 
 }
+
+#else
+
+int main(int argc, char* argv[])
+{
+    return 0;
+}
+
+#endif

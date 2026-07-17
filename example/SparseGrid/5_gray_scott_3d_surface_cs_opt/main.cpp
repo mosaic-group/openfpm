@@ -174,7 +174,10 @@ void extend(sgrid_type & grid, size_t (& sz)[3],double (& spacing)[3])
 										store_crs<V_dst>(grid,Vext,ids);
 									 };
 
-		grid.template conv_cross_ids<1,double>({0,0,0},{sz[0] - 1, sz[1] - 1, sz[2] - 1},func_extend);
+		grid.template conv_cross_ids<1,double>({0,0,0},
+			{static_cast<long int>(sz[0] - 1),
+			 static_cast<long int>(sz[1] - 1),
+			 static_cast<long int>(sz[2] - 1)},func_extend);
 }
 
 int main(int argc, char* argv[])
@@ -300,7 +303,10 @@ int main(int argc, char* argv[])
 												store_crs_v<tgrad_v,z>(grid,v_out[2],ids);
 											};
 
-		grid.template conv_cross_ids<1,double>({0,0,0},{sz[0]-1,sz[1] - 1,sz[2] - 1},func_grad);
+		grid.template conv_cross_ids<1,double>({0,0,0},
+										  {static_cast<long int>(sz[0] - 1),
+										   static_cast<long int>(sz[1] - 1),
+										   static_cast<long int>(sz[2] - 1)},func_grad);
 
 		auto func_lap = [&spacing,uFactor,vFactor,deltaT,K,F](auto & grid, auto & ids,
                                  unsigned char * mask_sum){
@@ -380,7 +386,10 @@ int main(int argc, char* argv[])
 												store_crs<V_next>(grid,outV,ids);
 											};
 
-		grid.template conv_cross_ids<1,double>({0,0,0},{sz[0]-1,sz[1] - 1,sz[2] - 1},func_lap);
+		grid.template conv_cross_ids<1,double>({0,0,0},
+										  {static_cast<long int>(sz[0] - 1),
+										   static_cast<long int>(sz[1] - 1),
+										   static_cast<long int>(sz[2] - 1)},func_lap);
 
 //		New.write_frame("update",i);
 

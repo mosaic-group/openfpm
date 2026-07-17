@@ -303,9 +303,9 @@ int main(int argc, char * argv[]) {
             opt=support_options::ADAPTIVE;
         }
         auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
-        SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx{particles,verletList,2,rCut,SCF,rCut/SCF,opt};
-        SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy{particles,verletList,2,rCut,SCF,rCut/SCF,opt};
-        SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz{particles,verletList,2,rCut,SCF,rCut/SCF,opt};
+        SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx(particles,verletList,2,rCut,SCF,rCut/SCF,opt);
+        SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy(particles,verletList,2,rCut,SCF,rCut/SCF,opt);
+        SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz(particles,verletList,2,rCut,SCF,rCut/SCF,opt);
         if(DCPSE_LOAD){
             Sdxx.load(particles,"DCPSE/Dxx");
             Sdyy.load(particles,"DCPSE/Dyy");

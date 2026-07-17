@@ -1,3 +1,4 @@
+#ifdef __NVCC__
 
 // Include Vector Expression,Vector Expressions for Subset,DCPSE,Odeint header files
 #include "Operators/Vector/vector_dist_operators.hpp"
@@ -294,3 +295,12 @@ int main(int argc, char *argv[])
     openfpm_finalize(); // Finalize openFPM library
     return 0;
 } //main end
+
+#else
+
+int main(int argc, char* argv[])
+{
+    return 0;
+}
+
+#endif

@@ -144,9 +144,9 @@ int main(int argc, char * argv[]) {
   tt3.start();
 
   auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
-  SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
-  SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
-  SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz{particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx(particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
+  SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy(particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
+  SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz(particles,verletList,ord,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
   tt3.stop();
   tt2.start();
   particles.ghost_get<F>();

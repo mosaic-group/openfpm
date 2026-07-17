@@ -179,57 +179,6 @@ endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config_cmake.h.in ${PROJECT_BINARY_DIR}/config/config.h)
 
-if (CUDA_ON_BACKEND STREQUAL "METAL")
-	enable_testing()
-	add_subdirectory(example/Vector/1_gpu_first_step)
-endif()
-
-# WRITE BUILD OPTIONS TO CONFIG FILES. LATER USED TO CREATE example.mk
-if (OPENMP_FOUND)
-	if (NOT OpenMP_CXX_INCLUDE_DIRS STREQUAL "")
-		file(WRITE openmp_flags "${OpenMP_CXX_FLAGS} -I${OpenMP_CXX_INCLUDE_DIRS}")
-	else()
-		file(WRITE openmp_flags "${OpenMP_CXX_FLAGS}")
-	endif()
-	string(REPLACE ";" " " OpenMP_CXX_LIBRARIES_LIB "${OpenMP_CXX_LIBRARIES}")
-	file(WRITE openmp_libs ${OpenMP_CXX_LIBRARIES_LIB})
-else()
-	file(WRITE openmp_flags " ")
-	file(WRITE openmp_libs " ")
-endif()
-
-file(WRITE cuda_lib "${CUDA_cudart_static_LIBRARY} ${CUDA_cudadevrt_LIBRARY}") 
-file(WRITE cuda_options "${WARNING_SUPPRESSION_AND_OPTION_NVCC_TEXT}")
-
-file(WRITE mpi_include "-I${MPI_C_INCLUDE_DIRS}")
-file(WRITE mpi_libs "${MPI_C_LINK_FLAGS} ${MPI_C_LIBRARIES}")
-
-if(CUDA_ON_BACKEND STREQUAL "SEQUENTIAL" OR CUDA_ON_BACKEND STREQUAL "OpenMP")
-	file(WRITE cuda_include "-D__NVCC__ -DCUDART_VERSION=11000")
-	file(WRITE cuda_on_cpu "YES")
-else()
-	if (NOT CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES STREQUAL "")
-		file(WRITE cuda_include "-I${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
-	else()
-		file(WRITE cuda_include " ")
-	endif()
-	file(WRITE cuda_on_cpu "NO")
-endif()
-
-if (Boost_FOUND)
-	if (Boost_CONTEXT_FOUND)
-	       file(WRITE optional_boost_libs "-L${BOOST_ROOT}/lib -lboost_context")
-	else()
-	       file(WRITE optional_boost_libs " ")
-	endif()
-endif()
-
-if(HIP_FOUND)
-	file(WRITE hip_enabled 1)
-else()
-	file(WRITE hip_enabled 0)
-endif()
-
 #################### CPack to create auto installing packages
 
 include(InstallRequiredSystemLibraries)

@@ -1,3 +1,5 @@
+#ifdef __NVCC__
+
 //
 // Created by jstark on 2023-04-24.
 //
@@ -499,3 +501,12 @@ int main(int argc, char* argv[])
  *
  * @include SparseGrid/inhomogeneous_diffusion_porous_catalyst_CaCO3/main.cu
  */
+
+#else
+
+int main(int argc, char* argv[])
+{
+    return 0;
+}
+
+#endif
