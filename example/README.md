@@ -7,7 +7,13 @@ package. Configure and build an example by pointing CMake at the installation:
 cmake -S example/Vector/7_SPH_dlb_gpu -B build/sph-dlb \
   -Dopenfpm_DIR=/path/to/openfpm/install/cmake
 cmake --build build/sph-dlb
+cmake --build build/sph-dlb --target run
 ```
+
+The example's `run` target uses the installed package's matching MPI launcher
+and runtime library paths. No `source openfpm_vars` step is needed. Configure
+with `-DOPENFPM_MPI_PROCESSES=4` (or another value) to change the number of MPI
+processes.
 
 GPU examples always keep their CUDA-style `.cu` source. The installed OpenFPM
 configuration selects whether CMake compiles that source with CUDA, HIP,

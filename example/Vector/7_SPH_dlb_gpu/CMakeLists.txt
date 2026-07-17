@@ -5,3 +5,4 @@ find_package(openfpm CONFIG REQUIRED COMPONENTS numerics)
 
 openfpm_add_gpu_executable(sph_dlb_gpu SOURCES main.cu)
 target_link_libraries(sph_dlb_gpu PRIVATE openfpm::numerics)
+openfpm_add_mpi_run_target(sph_dlb_gpu TARGET_NAME run)

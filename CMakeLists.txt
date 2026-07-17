@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(openfpm LANGUAGES C CXX)
+project(openfpm VERSION 5.2.0 LANGUAGES C CXX)
 
 if (POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
-
-set(openfpm_VERSION 5.0.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake_modules/ /opt/rocm/hip/cmake)
 
