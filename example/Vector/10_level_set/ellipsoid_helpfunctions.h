@@ -267,7 +267,7 @@ template <typename discretization_type, int sdf, int sdf_analytical> inline void
 	while(part.isNext())
 	{
 		auto a = part.get();
-		Point<dim, double> xa = vd.template getPos(a);
+		Point<dim, double> xa = vd.getPos(a);
 		if (abs(vd.template getProp<sdf_analytical>(a)) > narrow_band_half_width)
 		{
 			++part;
@@ -370,4 +370,3 @@ template <typename discretization_type, int sdf, int sdfgrad, int curvature, int
 	std::cout<<"Maximum error for cp(xa) is: "<<maxerrcp<<std::endl;
 	//printf("%.20f,\n ", maxerr);
 }
-

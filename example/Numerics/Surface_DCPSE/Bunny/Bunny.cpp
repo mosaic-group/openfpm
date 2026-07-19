@@ -110,13 +110,13 @@ int main(int argc, char * argv[]) {
   auto N=getV<NORMAL>(particles);
 
   auto verletList = particles.template getVerlet<VL_NON_SYMMETRIC|VL_SKIP_REF_PART>(rCut);
-  SurfaceDerivative_x<NORMAL,decltype(verletList)> Sdx{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
-  SurfaceDerivative_y<NORMAL,decltype(verletList)> Sdy{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
-  SurfaceDerivative_z<NORMAL,decltype(verletList)> Sdz{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_x<NORMAL,decltype(verletList)> Sdx(particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
+  SurfaceDerivative_y<NORMAL,decltype(verletList)> Sdy(particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
+  SurfaceDerivative_z<NORMAL,decltype(verletList)> Sdz(particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
 
-  SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
-  SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
-  SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz{particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf};
+  SurfaceDerivative_xx<NORMAL,decltype(verletList)> Sdxx(particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
+  SurfaceDerivative_yy<NORMAL,decltype(verletList)> Sdyy(particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
+  SurfaceDerivative_zz<NORMAL,decltype(verletList)> Sdzz(particles,verletList,2,rCut,grid_spacing_surf,rCut/grid_spacing_surf);
 
   DErr=-0.5*(Sdx(N[0])+Sdy(N[1])+Sdz(N[2]));
   particles.deleteGhost();

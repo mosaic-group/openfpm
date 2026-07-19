@@ -1,6 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## OpenFPM 5.2.0 - Jul 2026
+
+### Added
+- Add a Metal GPU backend for macOS. Existing CUDA-style kernels are compiled through the HIP frontend, translated to SPIR-V with clspv, and executed through MoltenVK
+- Add the installed `openfpm_add_gpu_executable()` CMake function. The installed OpenFPM package selects CUDA, HIP, Metal, OpenMP, sequential, or NONE compilation for downstream `.cu` sources
+- Add `openfpm_add_mpi_run_target()` so CMake can launch examples with the matching MPI executable and runtime library environment without sourcing `openfpm_vars`
+- Add the optional `numerics` package component and exported `openfpm::numerics` target, including diagnostics when numerics or PETSc support is unavailable
+
+### Changes
+- Migrate examples from `example.mk` and delegated Makefiles to standalone CMake projects that consume OpenFPM through `find_package(openfpm CONFIG REQUIRED)`
+- Keep existing `.cu` files as the source of truth for all GPU backends; examples no longer contain backend-specific targets or Metal translation commands
+- Generate and install package metadata independently in each CMake build tree so CUDA, HIP, Metal, CPU, and numerics configurations cannot overwrite one another
+
+### Fixed
+- Preserve physical-storage load ordering during SPIR-V compatibility translation, fixing incorrect values in the Metal DLB GPU examples
+- Handle NONE, sequential, and OpenMP backends consistently when compiling CUDA-style examples as C++
+
 ## OpenFPM 5.1.0 - Jun 2024
 - Refactor implementations of cell list and Verlet list `CellList`, `CellList_gpu`,`VerletList` and all neighborhood iterators. Move from keeping two sets (unordered and ordered) of positions/property vectors to reordering explicitly before launching CUDA kernels that utilize this feature
 
@@ -385,8 +402,6 @@ Additional Notes:
 
 ### Changed
 - Nothing to report
-
-
 
 
 

@@ -3,6 +3,12 @@
 #include "data_type/aggregate.hpp"
 #include "timer.hpp"
 
+#ifdef CUDIFY_USE_METAL
+using real_number = float;
+#else
+using real_number = double;
+#endif
+
 /*!
  *
  * \page Grid_3_gs_3D_sparse_gpu Gray Scott in 3D using sparse grids on GPU
@@ -81,9 +87,9 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 {
 	//! \cond [create points] \endcond
 
-	double spacing_x = grid.spacing(0);
-	double spacing_y = grid.spacing(1);
-	double spacing_z = grid.spacing(2);
+	real_number spacing_x = grid.spacing(0);
+	real_number spacing_y = grid.spacing(1);
+	real_number spacing_z = grid.spacing(2);
 
 	typedef typename GetAddBlockType<SparseGridType>::type InsertBlockT;
 
@@ -95,8 +101,8 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 		{
 			for (int k = 0 ; k < div[2] ; k++)
 			{
-				Point<3,double> p({0.5+i*1.0,0.5+j*1.0,0.5+k*1.0});
-				Sphere<3,double> sph(p,0.3);
+				Point<3,real_number> p({0.5+i*1.0,0.5+j*1.0,0.5+k*1.0});
+				Sphere<3,real_number> sph(p,0.3);
 
 				Box<3,size_t> bx;
 
@@ -108,7 +114,7 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 
 				grid.addPoints([spacing_x,spacing_y,spacing_z,sph] __device__ (int i, int j, int k)
 			        	{
-							Point<3,double> pc({i*spacing_x,j*spacing_y,k*spacing_z});
+							Point<3,real_number> pc({i*spacing_x,j*spacing_y,k*spacing_z});
 
 							// Check if the point is in the domain
 											if (sph.isInside(pc) )
@@ -132,8 +138,8 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 	{
 			for (int j = 0 ; j < div[1] ; j++)
 			{
-				Point<3,double> u({0.0,0.0,1.0});
-				Point<3,double> c({0.5+i,0.5+j,0.0});
+				Point<3,real_number> u({0.0,0.0,1.0});
+				Point<3,real_number> c({0.5+i,0.5+j,0.0});
 
 				Box<3,size_t> bx;
 
@@ -148,9 +154,9 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 
 				grid.addPoints(bx.getKP1(),bx.getKP2(),[spacing_x,spacing_y,spacing_z,u,c] __device__ (int i, int j, int k)
 									{
-						Point<3,double> pc({i*spacing_x,j*spacing_y,k*spacing_z});
-												Point<3,double> pcs({i*spacing_x,j*spacing_y,k*spacing_z});
-												Point<3,double> vp;
+						Point<3,real_number> pc({i*spacing_x,j*spacing_y,k*spacing_z});
+												Point<3,real_number> pcs({i*spacing_x,j*spacing_y,k*spacing_z});
+												Point<3,real_number> vp;
 
 						// shift
 						pc -= c; 
@@ -160,7 +166,7 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 										vp.get(1) = pc.get(2)*u.get(0) - pc.get(0)*u.get(2);
 										vp.get(2) = pc.get(0)*u.get(1) - pc.get(1)*u.get(0);
 
-						double distance = vp.norm();
+						real_number distance = vp.norm();
 
 												// Check if the point is in the domain
 												if (distance < 0.1 )
@@ -184,8 +190,8 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 	{
 			for (int k = 0 ; k < div[2] ; k++)
 			{
-				Point<3,double> u({0.0,1.0,0.0});
-				Point<3,double> c({0.5+i,0.0,0.5+k});
+				Point<3,real_number> u({0.0,1.0,0.0});
+				Point<3,real_number> c({0.5+i,0.0,0.5+k});
 
 				Box<3,size_t> bx;
 
@@ -200,9 +206,9 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 
 				grid.addPoints(bx.getKP1(),bx.getKP2(),[spacing_x,spacing_y,spacing_z,u,c] __device__ (int i, int j, int k)
 									{
-						Point<3,double> pc({i*spacing_x,j*spacing_y,k*spacing_z});
-												Point<3,double> pcs({i*spacing_x,j*spacing_y,k*spacing_z});
-												Point<3,double> vp;
+						Point<3,real_number> pc({i*spacing_x,j*spacing_y,k*spacing_z});
+												Point<3,real_number> pcs({i*spacing_x,j*spacing_y,k*spacing_z});
+												Point<3,real_number> vp;
 
 						// shift
 						pc -= c; 
@@ -212,7 +218,7 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 										vp.get(1) = pc.get(2)*u.get(0) - pc.get(0)*u.get(2);
 										vp.get(2) = pc.get(0)*u.get(1) - pc.get(1)*u.get(0);
 
-						double distance = vp.norm();
+						real_number distance = vp.norm();
 
 												// Check if the point is in the domain
 												if (distance < 0.1 )
@@ -236,8 +242,8 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 	{
 			for (int k = 0 ; k < div[2] ; k++)
 			{
-				Point<3,double> u({1.0,0.0,0.0});
-				Point<3,double> c({0.0,0.5+j,0.5+k});
+				Point<3,real_number> u({1.0,0.0,0.0});
+				Point<3,real_number> c({0.0,0.5+j,0.5+k});
 
 				Box<3,size_t> bx;
 
@@ -252,9 +258,9 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 
 				grid.addPoints(bx.getKP1(),bx.getKP2(),[spacing_x,spacing_y,spacing_z,u,c] __device__ (int i, int j, int k)
 									{
-						Point<3,double> pc({i*spacing_x,j*spacing_y,k*spacing_z});
-												Point<3,double> pcs({i*spacing_x,j*spacing_y,k*spacing_z});
-												Point<3,double> vp;
+						Point<3,real_number> pc({i*spacing_x,j*spacing_y,k*spacing_z});
+												Point<3,real_number> pcs({i*spacing_x,j*spacing_y,k*spacing_z});
+												Point<3,real_number> vp;
 
 						// shift
 						pc -= c; 
@@ -264,7 +270,7 @@ void init(SparseGridType & grid, Box<3,float> & domain, size_t (& div)[3])
 										vp.get(1) = pc.get(2)*u.get(0) - pc.get(0)*u.get(2);
 										vp.get(2) = pc.get(0)*u.get(1) - pc.get(1)*u.get(0);
 
-						double distance = vp.norm();
+						real_number distance = vp.norm();
 
 												// Check if the point is in the domain
 												if (distance < 0.1 )
@@ -501,4 +507,3 @@ int main(int argc, char* argv[])
 }
 
 #endif
-

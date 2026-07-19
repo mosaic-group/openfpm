@@ -1,3 +1,5 @@
+#ifdef __NVCC__
+
 //
 // Created by jstark on 2023-05-05.
 //
@@ -389,3 +391,12 @@ int main(int argc, char* argv[])
 }
 
 //! \cond [iteration] \endcond
+
+#else
+
+int main(int argc, char* argv[])
+{
+    return 0;
+}
+
+#endif

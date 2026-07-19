@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(openfpm LANGUAGES C CXX)
+project(openfpm VERSION 5.2.0 LANGUAGES C CXX)
 
 if (POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
-
-set(openfpm_VERSION 5.0.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake_modules/ /opt/rocm/hip/cmake)
 
@@ -110,6 +108,11 @@ if(SE_CLASS2)
 	set(DEFINE_SE_CLASS2 "#define SE_CLASS2")
 endif()
 
+if (CUDA_ON_BACKEND STREQUAL "METAL")
+	set(CMAKE_CXX_STANDARD 17)
+	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 if(SE_CLASS3)
 	set(DEFINE_SE_CLASS3 "#define SE_CLASS3")
 endif()
@@ -159,6 +162,9 @@ else()
 endif()
 
 add_subdirectory(openfpm_devices)
+if (CUDA_ON_BACKEND STREQUAL "METAL")
+	include_directories(${VULKAN_INCLUDE_DIR})
+endif()
 add_subdirectory(openfpm_data)
 add_subdirectory(openfpm_vcluster)
 add_subdirectory(openfpm_io)
@@ -170,52 +176,6 @@ if (ENABLE_NUMERICS)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/config_cmake.h.in ${PROJECT_BINARY_DIR}/config/config.h)
-
-# WRITE BUILD OPTIONS TO CONFIG FILES. LATER USED TO CREATE example.mk
-if (OPENMP_FOUND)
-	if (NOT OpenMP_CXX_INCLUDE_DIRS STREQUAL "")
-		file(WRITE openmp_flags "${OpenMP_CXX_FLAGS} -I${OpenMP_CXX_INCLUDE_DIRS}")
-	else()
-		file(WRITE openmp_flags "${OpenMP_CXX_FLAGS}")
-	endif()
-	string(REPLACE ";" " " OpenMP_CXX_LIBRARIES_LIB "${OpenMP_CXX_LIBRARIES}")
-	file(WRITE openmp_libs ${OpenMP_CXX_LIBRARIES_LIB})
-else()
-	file(WRITE openmp_flags " ")
-	file(WRITE openmp_libs " ")
-endif()
-
-file(WRITE cuda_lib "${CUDA_cudart_static_LIBRARY} ${CUDA_cudadevrt_LIBRARY}") 
-file(WRITE cuda_options "${WARNING_SUPPRESSION_AND_OPTION_NVCC_TEXT}")
-
-file(WRITE mpi_include "-I${MPI_C_INCLUDE_DIRS}")
-file(WRITE mpi_libs "${MPI_C_LINK_FLAGS} ${MPI_C_LIBRARIES}")
-
-if(CUDA_ON_BACKEND STREQUAL "SEQUENTIAL" OR CUDA_ON_BACKEND STREQUAL "OpenMP")
-	file(WRITE cuda_include "-D__NVCC__ -DCUDART_VERSION=11000")
-	file(WRITE cuda_on_cpu "YES")
-else()
-	if (NOT CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES STREQUAL "")
-		file(WRITE cuda_include "-I${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
-	else()
-		file(WRITE cuda_include " ")
-	endif()
-	file(WRITE cuda_on_cpu "NO")
-endif()
-
-if (Boost_FOUND)
-	if (Boost_CONTEXT_FOUND)
-	       file(WRITE optional_boost_libs "-L${BOOST_ROOT}/lib -lboost_context")
-	else()
-	       file(WRITE optional_boost_libs " ")
-	endif()
-endif()
-
-if(HIP_FOUND)
-	file(WRITE hip_enabled 1)
-else()
-	file(WRITE hip_enabled 0)
-endif()
 
 #################### CPack to create auto installing packages
 

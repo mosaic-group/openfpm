@@ -1,3 +1,5 @@
+#ifdef __NVCC__
+
 #include <Vector/map_vector.hpp>
 #include <chrono>
 //#include <memory/HeapMemory.cpp>
@@ -314,3 +316,12 @@ int main() {
 #endif
 	}
 }
+
+#else
+
+int main(int argc, char* argv[])
+{
+    return 0;
+}
+
+#endif
