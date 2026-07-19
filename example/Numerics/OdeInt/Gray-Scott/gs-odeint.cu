@@ -6,15 +6,26 @@
 #include <string>
 //! @cond [Ode2Include] @endcond
 
+#ifdef CUDIFY_USE_METAL
+using real_number = float;
+#else
+using real_number = double;
+#endif
+
+using example_state_type = state_type_2d_ofp_t<real_number>;
+#ifdef __NVCC__
+using example_gpu_state_type = state_type_2d_ofp_gpu_t<real_number>;
+#endif
+
 constexpr int x = 0;
 constexpr int y = 1;
 
-double dt=1.0,tf=5000.0;
+real_number dt=1.0,tf=5000.0;
 
 void *PointerDistGlobal;
 
-typedef aggregate<VectorS<2, double>,VectorS<2, double>> Property_type;
-typedef vector_dist_gpu<3, double, Property_type> dist_vector_type;
+typedef aggregate<VectorS<2, real_number>,VectorS<2, real_number>> Property_type;
+typedef vector_dist_gpu<3, real_number, Property_type> dist_vector_type;
 
 
 template<typename laplacian_type, typename verletList_type>
@@ -26,11 +37,11 @@ struct RHSFunctor
     verletList_type &verletList;
 
     // Physical contants
-    double K = 0.053;
-    double F = 0.014;
+    real_number K = 0.053;
+    real_number F = 0.014;
 
-    double d1 = 2*1e-4;
-    double d2 = 1*1e-4;
+    real_number d1 = 2*1e-4;
+    real_number d2 = 1*1e-4;
 
     //Constructor
     RHSFunctor(
@@ -41,7 +52,7 @@ struct RHSFunctor
         verletList(verletList)
     {}
 
-    void operator()( const state_type_2d_ofp_gpu &X , state_type_2d_ofp_gpu &dxdt , const double t ) const
+    void operator()( const example_gpu_state_type &X , example_gpu_state_type &dxdt , const real_number t ) const
     {
         //Casting the pointers to OpenFPM vector distributions
         dist_vector_type &Particles= *(dist_vector_type *) PointerDistGlobal;
@@ -68,7 +79,7 @@ template<typename dist_vector_type_ker>
 struct ObserverFunctor {
 
     int ctr;
-    double t_old;
+    real_number t_old;
 
     dist_vector_type_ker &vectorDistKer;
 
@@ -82,7 +93,7 @@ struct ObserverFunctor {
         t_old = -dt;
     }
 
-    void operator()(state_type_2d_ofp &X,const double t) {
+    void operator()(example_state_type &X,const real_number t) {
         dist_vector_type &Particles= *(dist_vector_type *) PointerDistGlobal;
         Particles.deviceToHostProp<0,1>();
         Particles.ghost_get<0>();
@@ -110,7 +121,7 @@ struct ObserverFunctor {
 
 
 template <typename stepper_type, typename laplacian_type, typename verletList_type>
-void run_stepper_const(dist_vector_type &Particles, std::vector<double> &runtime_v, laplacian_type &Lap, verletList_type& verletList) {
+void run_stepper_const(dist_vector_type &Particles, std::vector<real_number> &runtime_v, laplacian_type &Lap, verletList_type& verletList) {
 
     auto vectorDistKer = vd.toKernel();
     RHSFunctor<laplacian_type, verletList_type> System(Lap, verletList);
@@ -118,17 +129,17 @@ void run_stepper_const(dist_vector_type &Particles, std::vector<double> &runtime
     auto C = getV<0>(Particles);
     auto InitC = getV<1>(Particles);
 
-    state_type_2d_ofp x0;
+    example_state_type x0;
     x0.data.get<x>() = InitC[x];
     x0.data.get<y>() = InitC[y];
 
     Particles.hostToDeviceProp<0,1>();
     timer timer_integrate;
     timer_integrate.start();
-    boost::numeric::odeint::integrate_const(stepper_type(), System, x0, 0.0, tf, dt, ObserveAndUpdate);
+    boost::numeric::odeint::integrate_const(stepper_type(), System, x0, real_number{0}, tf, dt, ObserveAndUpdate);
 //    boost::numeric::odeint::integrate_const(stepper_type(), derivative, x0, 0.0, tf, dt);
     timer_integrate.stop();
-    double rt=timer_integrate.getwct();
+    real_number rt=timer_integrate.getwct();
     auto &v_cl=create_vcluster();  
     v_cl.sum(rt);
     v_cl.execute();
@@ -140,7 +151,7 @@ void run_stepper_const(dist_vector_type &Particles, std::vector<double> &runtime
 }
 
 // template <typename stepper_type, typename laplacian_type, typename verletList_type>
-// void run_stepper_adaptive(dist_vector_type &Particles, std::vector<double> &runtime_v, laplacian_type &Lap, verletList_type& verletList) {
+// void run_stepper_adaptive(dist_vector_type &Particles, std::vector<real_number> &runtime_v, laplacian_type &Lap, verletList_type& verletList) {
 
 //     RHSFunctor<laplacian_type, verletList_type> System(Lap, verletList);
 //     ObserverFunctor ObserveAndUpdate;
@@ -156,7 +167,7 @@ void run_stepper_const(dist_vector_type &Particles, std::vector<double> &runtime
 //     boost::numeric::odeint::integrate_adaptive(boost::numeric::odeint::make_controlled(1e-3,1e-3,stepper_type()), System , x0 , 0.0 , tf , dt, ObserveAndUpdate);
 // //    boost::numeric::odeint::integrate_adaptive( stepper_type() , derivative , x0 , 0.0 , tf , dt);
 //     timer_integrate.stop();
-//     double rt=timer_integrate.getwct();
+//     real_number rt=timer_integrate.getwct();
 //     auto &v_cl=create_vcluster();  
 //     v_cl.sum(rt);
 //     v_cl.execute();
@@ -167,8 +178,8 @@ void run_stepper_const(dist_vector_type &Particles, std::vector<double> &runtime
 //     if(v_cl.rank()==0)std::cout << "Runtime: " << rt << std::endl;
 // }
 
-double average(std::vector<double> &nums) {
-    return std::accumulate(nums.begin(), nums.end(), 0.0) / static_cast<double>(nums.size());
+real_number average(std::vector<real_number> &nums) {
+    return std::accumulate(nums.begin(), nums.end(), real_number{0}) / static_cast<real_number>(nums.size());
 }
 
 
@@ -178,21 +189,21 @@ int main(int argc, char *argv[])
     openfpm_init(&argc, &argv);
     tf=std::atof(argv[2]);
     // output
-    std::vector<double> runtime_rk4_const;
-    std::vector<double> runtime_rk5_const;
-    std::vector<double> runtime_rk78_const;
-    std::vector<double> runtime_rk5_adapt;
+    std::vector<real_number> runtime_rk4_const;
+    std::vector<real_number> runtime_rk5_const;
+    std::vector<real_number> runtime_rk78_const;
+    std::vector<real_number> runtime_rk5_adapt;
     size_t gdsz=std::atof(argv[1]);
-    Box<3,double> box({0.0,0.0,0.0},{2.5,2.5,2.5});
+    Box<3,real_number> box({0.0,0.0,0.0},{2.5,2.5,2.5});
     size_t sz[3] = {gdsz,gdsz,gdsz};
     // Define periodicity of the grid
     size_t bc[3] = {PERIODIC,PERIODIC,PERIODIC};
-    double spacing[3];
+    real_number spacing[3];
     spacing[0] = 2.5 / (sz[0]);
     spacing[1] = 2.5 / (sz[1]);
     spacing[2] = 2.5 / (sz[2]);
-    double rCut = 2.9 * spacing[0];
-    Ghost<3, double> ghost(rCut);
+    real_number rCut = 2.9 * spacing[0];
+    Ghost<3, real_number> ghost(rCut);
 
     dist_vector_type Particles(0, box, bc, ghost);
     Particles.setPropNames({"Concentration","Initial"});
@@ -201,19 +212,19 @@ int main(int argc, char *argv[])
     while (it.isNext()) {
         Particles.add();
         auto key = it.get();
-        double x = 0.0 + key.get(0) * spacing[0];
+        real_number x = 0.0 + key.get(0) * spacing[0];
         Particles.getLastPos()[0] = x;
-        double y = 0.0 + key.get(1) * spacing[1];
+        real_number y = 0.0 + key.get(1) * spacing[1];
         Particles.getLastPos()[1] = y;
-        double z = 0.0 + key.get(2) * spacing[2];
+        real_number z = 0.0 + key.get(2) * spacing[2];
         Particles.getLastPos()[2] = z;
         // Here fill the Initial value of the concentration.
         Particles.template getLastProp<1>()[0] = 1.0;
         Particles.template getLastProp<1>()[1] = 0.0;
 
         if (x > 1.55 && x < 1.85 && y > 1.55 && y < 1.85 && z > 1.55 && z < 1.85) {
-            Particles.template getLastProp<1>()[0] = 0.5 + (((double)std::rand())/RAND_MAX -0.5)/10.0;
-            Particles.template getLastProp<1>()[1] = 0.25 + (((double)std::rand())/RAND_MAX -0.5)/20.0;
+            Particles.template getLastProp<1>()[0] = 0.5 + (((real_number)std::rand())/RAND_MAX -0.5)/10.0;
+            Particles.template getLastProp<1>()[1] = 0.25 + (((real_number)std::rand())/RAND_MAX -0.5)/20.0;
         }
 
         ++it;
@@ -235,10 +246,10 @@ int main(int argc, char *argv[])
     auto Init = getV<1>(Particles);
     C=Init;
     //Now we create a odeint stepper object (RK4). Since we are in 2d, we are going to use "state_type_2d_ofp". Which is a structure or state_type compatible with odeint. We further pass all the parameters including "boost::numeric::odeint::vector_space_algebra_ofp",which tell odeint to use openfpm algebra.
-    // The template parameters are: state_type_2d_ofp (state type of X), double (type of the value inside the state), state_type_2d_ofp (state type of DxDt), double (type of the time), boost::numeric::odeint::vector_space_algebra_ofp (our algebra)
-    typedef boost::numeric::odeint::runge_kutta4<state_type_2d_ofp, double, state_type_2d_ofp, double, boost::numeric::odeint::vector_space_algebra_ofp> Odeint_rk4;
-    typedef boost::numeric::odeint::runge_kutta_cash_karp54< state_type_2d_ofp,double,state_type_2d_ofp,double,boost::numeric::odeint::vector_space_algebra_ofp> Odeint_rk5;
-    typedef boost::numeric::odeint::runge_kutta_fehlberg78< state_type_2d_ofp,double,state_type_2d_ofp,double,boost::numeric::odeint::vector_space_algebra_ofp> Odeint_rk8;
+    // The template parameters are: state_type_2d_ofp (state type of X), real_number (type of the value inside the state), state_type_2d_ofp (state type of DxDt), real_number (type of the time), boost::numeric::odeint::vector_space_algebra_ofp (our algebra)
+    typedef boost::numeric::odeint::runge_kutta4<example_state_type, real_number, example_state_type, real_number, boost::numeric::odeint::vector_space_algebra_ofp> Odeint_rk4;
+    typedef boost::numeric::odeint::runge_kutta_cash_karp54<example_state_type,real_number,example_state_type,real_number,boost::numeric::odeint::vector_space_algebra_ofp> Odeint_rk5;
+    typedef boost::numeric::odeint::runge_kutta_fehlberg78<example_state_type,real_number,example_state_type,real_number,boost::numeric::odeint::vector_space_algebra_ofp> Odeint_rk8;
     //The method Odeint_rk4 from Odeint, requires system (a function which computes RHS of the PDE), an instance of the Compute RHS functor. We create the System with the correct types and parameteres for the operators as declared before.
     RHSFunctor<Laplacian<decltype(verletList)>, decltype(verletList)> System(Lap, verletList);
 
@@ -247,13 +258,13 @@ int main(int argc, char *argv[])
 
 
     //Furhter, odeint needs data in a state type "state_type_2d_ofp", we create one and fill in the initial condition.
-    state_type_2d_ofp X;
+    example_state_type X;
     //Since we created a 2d state_type we initialize the two fields in the object data using the method get.
     X.data.get<x>() = C[0];
     X.data.get<y>() = C[1];
 
 
-    std::vector<double> inter_times; // vector to store intermediate time steps taken by odeint.
+    std::vector<real_number> inter_times; // vector to store intermediate time steps taken by odeint.
         Particles.deleteGhost();
         Particles.write("Initial");
         Particles.ghost_get<0>();

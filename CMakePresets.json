@@ -1,0 +1,54 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "environment": {
+                "DYLD_LIBRARY_PATH": "${sourceDir}/../dep_ofp64/METIS/lib:$penv{DYLD_LIBRARY_PATH}"
+            },
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_C_COMPILER": "${sourceDir}/../dep_ofp64/MPI/bin/mpicc",
+                "CMAKE_CXX_COMPILER": "${sourceDir}/../dep_ofp64/MPI/bin/mpicxx",
+                "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+                "CUDA_ON_BACKEND": "METAL",
+                "OPENFPM_MOLTENVK_HIP_CLANG": "${sourceDir}/../dep_ofp64/CLSPV/bin/clang++",
+                "OPENFPM_MOLTENVK_LLVM_OPT": "${sourceDir}/../dep_ofp64/CLSPV/bin/opt",
+                "OPENFPM_MOLTENVK_LLVM_LINK": "${sourceDir}/../dep_ofp64/CLSPV/bin/llvm-link",
+                "OPENFPM_MOLTENVK_CLSPV": "${sourceDir}/../dep_ofp64/CLSPV/bin/clspv",
+                "OPENFPM_CHIPSTAR_ROOT": "${sourceDir}/../dep_ofp64/CHIPSTAR",
+                "MOLTENVK_ROOT": "/opt/homebrew/opt/molten-vk",
+                "VULKAN_HEADERS_ROOT": "/opt/homebrew/opt/vulkan-headers",
+                "SE_CLASS1": "OFF",
+                "SE_CLASS2": "OFF",
+                "SE_CLASS3": "OFF",
+                "ENABLE_NUMERICS": "ON",
+                "TEST_COVERAGE": "OFF",
+                "TEST_PERFORMANCE": "OFF",
+                "SCAN_COVERTY": "OFF",
+                "ENABLE_ASAN": "OFF",
+                "ENABLE_GARBAGE_INJECTOR": "OFF",
+                "ENABLE_VCLUSTER_GARBAGE_INJECTOR": "OFF",
+                "MPI_VENDOR": "openmpi",
+                "MPI_ROOT": "${sourceDir}/../dep_ofp64/MPI",
+                "PETSC_ROOT": "${sourceDir}/../dep_ofp64/PETSC",
+                "BOOST_ROOT": "${sourceDir}/../dep_ofp64/BOOST",
+                "HDF5_ROOT": "${sourceDir}/../dep_ofp64/HDF5",
+                "LIBHILBERT_ROOT": "${sourceDir}/../dep_ofp64/LIBHILBERT",
+                "BLITZ_ROOT": "${sourceDir}/../dep_ofp64/BLITZ",
+                "ALGOIM_ROOT": "${sourceDir}/../dep_ofp64/ALGOIM",
+                "PARMETIS_ROOT": "${sourceDir}/../dep_ofp64/PARMETIS",
+                "METIS_ROOT": "${sourceDir}/../dep_ofp64/METIS",
+                "Vc_ROOT": "${sourceDir}/../dep_ofp64/VCDEVEL",
+                "SUITESPARSE_ROOT": "${sourceDir}/../dep_ofp64/SUITESPARSE",
+                "EIGEN3_ROOT": "${sourceDir}/../dep_ofp64/EIGEN",
+                "MINTER_ROOT": "${sourceDir}/../dep_ofp64/MINTER",
+                "OPENBLAS_ROOT": "/opt/homebrew/opt/openblas",
+                "Boost_NO_BOOST_CMAKE": "ON"
+            }
+        }
+    ]
+}

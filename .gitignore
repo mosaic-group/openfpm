@@ -41,7 +41,7 @@ Thumbs.db
 .idea/
 cmake-build-debug/
 cmake-build-release/
-
+build*
 # Script-generated build folder
 build/
 
@@ -86,6 +86,7 @@ install_dir
 *.h5
 *.json
 *.html
+*.*vtp
 cl_part_norm_hilbert_dev_2_ref
 cl_part_norm_hilbert_dev_3_ref
 cl_part_norm_hilbert_mean_2_ref
@@ -123,6 +124,11 @@ projectId.sh
 *cmake*
 **/*cmake*
 **/*CMake*
+!example/**/
+!example/**/CMakeLists.txt
+
+# Portable CMake workspace configuration.
+!/CMakePresets.json
 
 **/.gitignore
 .gitignore

@@ -66,7 +66,13 @@
 #include "OdeIntegrators/OdeIntegrators.hpp"
 #include "Operators/Vector/vector_dist_operators.hpp"
 
-typedef float real_number;
+#ifdef CUDIFY_USE_METAL
+using real_number = float;
+#else
+using real_number = double;
+#endif
+
+typedef float particle_real_number;
 
 // A constant to indicate boundary particles
 #define BOUNDARY 0
@@ -75,65 +81,65 @@ typedef float real_number;
 #define FLUID 1
 
 // initial spacing between particles dp in the formulas
-const real_number dp = 0.0085;
+const particle_real_number dp = 0.0085;
 // Maximum height of the fluid water
 // is going to be calculated and filled later on
-real_number h_swl = 0.0;
+particle_real_number h_swl = 0.0;
 
 // c_s in the formulas (constant used to calculate the sound speed)
-const real_number coeff_sound = 20.0;
+const particle_real_number coeff_sound = 20.0;
 
 // gamma in the formulas
-const real_number gamma_ = 7.0;
+const particle_real_number gamma_ = 7.0;
 
 // sqrt(3.0*dp*dp) support of the kernel
-const real_number H = 0.0147224318643;
+const particle_real_number H = 0.0147224318643;
 
 // Eta in the formulas
-const real_number Eta2 = 0.01 * H*H;
+const particle_real_number Eta2 = 0.01 * H*H;
 
 // alpha in the formula
-const real_number visco = 0.1;
+const particle_real_number visco = 0.1;
 
 // cbar in the formula (calculated later)
-real_number cbar = 0.0;
+particle_real_number cbar = 0.0;
 
 // Mass of the fluid particles
-const real_number MassFluid = 0.000614125;
+const particle_real_number MassFluid = 0.000614125;
 
 // Mass of the boundary particles
-const real_number MassBound = 0.000614125;
+const particle_real_number MassBound = 0.000614125;
 
 // End simulation time
 #ifdef TEST_RUN
-const real_number t_end = 0.001;
+const particle_real_number t_end = 0.001;
 #else
-const real_number t_end = 1.5;
+const particle_real_number t_end = 1.5;
 #endif
 
 // Gravity acceleration
-const real_number gravity = 9.81;
+const particle_real_number gravity = 9.81;
 
 // Reference densitu 1000Kg/m^3
-const real_number RhoZero = 1000.0;
+const particle_real_number RhoZero = 1000.0;
 
 // Filled later require h_swl, it is b in the formulas
-real_number B = 0.0;
+particle_real_number B = 0.0;
 
 // Constant used to define time integration
-const real_number CFLnumber = 0.2;
+const particle_real_number CFLnumber = 0.2;
 
 // Minimum T
-const real_number DtMin = 0.00001;
+const particle_real_number DtMin = 0.00001;
 
 // Minimum Rho allowed
-const real_number RhoMin = 700.0;
+const particle_real_number RhoMin = 700.0;
 
 // Maximum Rho allowed
-const real_number RhoMax = 1300.0;
+const particle_real_number RhoMax = 1300.0;
 
 // Filled in initialization
-real_number max_fluid_height = 0.0;
+particle_real_number max_fluid_height = 0.0;
 
 // Properties
 
@@ -172,14 +178,14 @@ const int RED = 8;
 const int RED2 = 9;
 
 // Type of the vector containing particles
-typedef vector_dist_gpu<3,real_number,aggregate<size_t,real_number,  real_number,    real_number,     real_number,     VectorS<3, real_number>, VectorS<3, real_number>, VectorS<3, real_number>, real_number, real_number, real_number, VectorS<3, real_number>>> particles;
+typedef vector_dist_gpu<3,particle_real_number,aggregate<size_t,particle_real_number,  particle_real_number,    particle_real_number,     particle_real_number,     VectorS<3, particle_real_number>, VectorS<3, particle_real_number>, VectorS<3, particle_real_number>, particle_real_number, particle_real_number, particle_real_number, VectorS<3, particle_real_number>>> particles;
 //                                              |          |             |               |                |                      |                         |                        |                  |           |			|				|
 //                                              |          |             |               |                |                      |                         |                        |                  |           |			|				|
 //                                             type      density       density        Pressure          delta                  force                    velocity                 velocity           reduction    another	 temp density temp velocity
 //                                                                     at n-1                           density                                                                  at n - 1           buffer   reduction buffer
 
 // global variable dt to be accessible in RHSFunctor
-double dt;
+real_number dt;
 
 // global odeint iteration variable to be accessible in RHSFunctor
 size_t odeintIteration;
@@ -256,7 +262,7 @@ template<> struct has_vector_kernel< sph_state_type_ofp_gpu >
  * All RHS computations  needs to happen in the operator ().
  * Odeint expects the arguments here to be an input state_type X, an output state_tyoe dxdt and time t.
  * We pass on the openfpm distributed state types as
- * void operator()( const sph_state_type_ofp_gpu &X , sph_state_type_ofp_gpu &dxdt , const double t ) const
+ * void operator()( const sph_state_type_ofp_gpu &X , sph_state_type_ofp_gpu &dxdt , const real_number t ) const
  *
  *
  * @snippet example/Numerics/OdeInt/SPH_dlb_gpu/main2.cu RHSFunctor
@@ -276,10 +282,10 @@ struct RHSFunctor
 		vectorDist(vectorDist)
 	{}
 
-	void operator()( sph_state_type_ofp_gpu &X , sph_state_type_ofp_gpu &dxdt , const double t)
+	void operator()( sph_state_type_ofp_gpu &X , sph_state_type_ofp_gpu &dxdt , const real_number t)
 	{
-		double dt05 = dt*0.5;
-		double dt2 = dt*2.0;
+		real_number dt05 = dt*real_number{0.5};
+		real_number dt2 = dt*real_number{2};
 
 		auto posExpression = getV<POS_PROP, comp_dev>(vectorDist);
 		auto forceExpression = getV<FORCE, comp_dev>(vectorDist);
@@ -296,9 +302,9 @@ struct RHSFunctor
 			X.data.get<0>() = rho_prevExpression;
 			X.data.get<2>() = velocity_prevExpression;
 
-			dxdt.data.get<0>() = 2*drhoExpression;
+			dxdt.data.get<0>() = real_number{2}*drhoExpression;
 			dxdt.data.get<1>() = velocityExpression + forceExpression*dt05 * typeExpression;
-			dxdt.data.get<2>() = forceExpression*2 * typeExpression;
+			dxdt.data.get<2>() = forceExpression*real_number{2} * typeExpression;
 		}
 
 		else
@@ -332,19 +338,19 @@ struct ModelCustom
 		dec.setSubSubDomainComputationCost(v, dec.getSubSubDomainComputationCost(v) * dec.getSubSubDomainComputationCost(v));
 	}
 
-	real_number distributionTol()
+	particle_real_number distributionTol()
 	{
 		return 1.01;
 	}
 };
 
 template<typename vd_type>
-__global__ void EqState_gpu(vd_type vectorDist, real_number B)
+__global__ void EqState_gpu(vd_type vectorDist, particle_real_number B)
 {
 	auto a = GET_PARTICLE(vectorDist);
 
-	real_number rho_a = vectorDist.template getProp<RHO>(a);
-	real_number rho_frac = rho_a / RhoZero;
+	particle_real_number rho_a = vectorDist.template getProp<RHO>(a);
+	particle_real_number rho_frac = rho_a / RhoZero;
 
 	vectorDist.template getProp<PRESSURE>(a) = B*( rho_frac*rho_frac*rho_frac*rho_frac*rho_frac*rho_frac*rho_frac - 1.0);
 }
@@ -357,9 +363,9 @@ inline void EqState(particles & vectorDist)
 }
 
 
-const real_number a2 = 1.0/M_PI/H/H/H;
+const particle_real_number a2 = 1.0/M_PI/H/H/H;
 
-inline __device__ __host__ real_number Wab(real_number r)
+inline __device__ __host__ particle_real_number Wab(particle_real_number r)
 {
 	r /= H;
 
@@ -372,26 +378,26 @@ inline __device__ __host__ real_number Wab(real_number r)
 }
 
 
-const real_number c1 = -3.0/M_PI/H/H/H/H;
-const real_number d1 = 9.0/4.0/M_PI/H/H/H/H;
-const real_number c2 = -3.0/4.0/M_PI/H/H/H/H;
-const real_number a2_4 = 0.25*a2;
+const particle_real_number c1 = -3.0/M_PI/H/H/H/H;
+const particle_real_number d1 = 9.0/4.0/M_PI/H/H/H/H;
+const particle_real_number c2 = -3.0/4.0/M_PI/H/H/H/H;
+const particle_real_number a2_4 = 0.25*a2;
 // Filled later
-real_number W_dap = 0.0;
+particle_real_number W_dap = 0.0;
 
-inline __device__ __host__ void DWab(Point<3,real_number> & dx, Point<3,real_number> & DW, real_number r)
+inline __device__ __host__ void DWab(Point<3,particle_real_number> & dx, Point<3,particle_real_number> & DW, particle_real_number r)
 {
-	const real_number qq=r/H;
+	const particle_real_number qq=r/H;
 
-	real_number qq2 = qq * qq;
-	real_number fac1 = (c1*qq + d1*qq2)/r;
-	real_number b1 = (qq < 1.0f)?1.0f:0.0f;
+	particle_real_number qq2 = qq * qq;
+	particle_real_number fac1 = (c1*qq + d1*qq2)/r;
+	particle_real_number b1 = (qq < 1.0f)?1.0f:0.0f;
 
-	real_number wqq = (2.0f - qq);
-	real_number fac2 = c2 * wqq * wqq / r;
-	real_number b2 = (qq >= 1.0f && qq < 2.0f)?1.0f:0.0f;
+	particle_real_number wqq = (2.0f - qq);
+	particle_real_number fac2 = c2 * wqq * wqq / r;
+	particle_real_number b2 = (qq >= 1.0f && qq < 2.0f)?1.0f:0.0f;
 
-	real_number factor = (b1*fac1 + b2*fac2);
+	particle_real_number factor = (b1*fac1 + b2*fac2);
 
 	DW.get(0) = factor * dx.get(0);
 	DW.get(1) = factor * dx.get(1);
@@ -399,40 +405,40 @@ inline __device__ __host__ void DWab(Point<3,real_number> & dx, Point<3,real_num
 }
 
 // Tensile correction
-inline __device__ __host__  real_number Tensile(real_number r, real_number rhoa, real_number rhob, real_number prs1, real_number prs2, real_number W_dap)
+inline __device__ __host__  particle_real_number Tensile(particle_real_number r, particle_real_number rhoa, particle_real_number rhob, particle_real_number prs1, particle_real_number prs2, particle_real_number W_dap)
 {
-	const real_number qq=r/H;
+	const particle_real_number qq=r/H;
 	//-Cubic Spline kernel
-	real_number wab;
+	particle_real_number wab;
 	if(r>H)
 	{
-		real_number wqq1=2.0f-qq;
-		real_number wqq2=wqq1*wqq1;
+		particle_real_number wqq1=2.0f-qq;
+		particle_real_number wqq2=wqq1*wqq1;
 
 		wab=a2_4*(wqq2*wqq1);
 	}
 	else
 	{
-		real_number wqq2=qq*qq;
-		real_number wqq3=wqq2*qq;
+		particle_real_number wqq2=qq*qq;
+		particle_real_number wqq3=wqq2*qq;
 
 		wab=a2*(1.0f-1.5f*wqq2+0.75f*wqq3);
 	}
 
 	//-Tensile correction.
-	real_number fab=wab*W_dap;
+	particle_real_number fab=wab*W_dap;
 	fab*=fab; fab*=fab; //fab=fab^4
-	const real_number tensilp1=(prs1/(rhoa*rhoa))*(prs1>0.0f? 0.01f: -0.2f);
-	const real_number tensilp2=(prs2/(rhob*rhob))*(prs2>0.0f? 0.01f: -0.2f);
+	const particle_real_number tensilp1=(prs1/(rhoa*rhoa))*(prs1>0.0f? 0.01f: -0.2f);
+	const particle_real_number tensilp2=(prs2/(rhob*rhob))*(prs2>0.0f? 0.01f: -0.2f);
 
 	return (fab*(tensilp1+tensilp2));
 }
 
 
-inline __device__ __host__ real_number Pi(const Point<3,real_number> & dr, real_number rr2, Point<3,real_number> & dv, real_number rhoa, real_number rhob, real_number massb, real_number cbar, real_number & visc)
+inline __device__ __host__ particle_real_number Pi(const Point<3,particle_real_number> & dr, particle_real_number rr2, Point<3,particle_real_number> & dv, particle_real_number rhoa, particle_real_number rhob, particle_real_number massb, particle_real_number cbar, particle_real_number & visc)
 {
-	const real_number dot = dr.get(0)*dv.get(0) + dr.get(1)*dv.get(1) + dr.get(2)*dv.get(2);
-	const real_number dot_rr2 = dot/(rr2+Eta2);
+	const particle_real_number dot = dr.get(0)*dv.get(0) + dr.get(1)*dv.get(1) + dr.get(2)*dv.get(2);
+	const particle_real_number dot_rr2 = dot/(rr2+Eta2);
 	visc=(dot_rr2 < visc)?visc:dot_rr2;
 
 	if(dot < 0)
@@ -448,33 +454,33 @@ inline __device__ __host__ real_number Pi(const Point<3,real_number> & dr, real_
 }
 
 template<typename particles_type, typename CellList_type>
-__global__ void calc_forces_gpu(particles_type vectorDist, CellList_type cellList, real_number W_dap, real_number cbar)
+__global__ void calc_forces_gpu(particles_type vectorDist, CellList_type cellList, particle_real_number W_dap, particle_real_number cbar)
 {
 	auto a = GET_PARTICLE(vectorDist);
 
-	real_number max_visc = 0.0f;
+	particle_real_number max_visc = 0.0f;
 
 	// Get the position xp of the particle
-	Point<3,real_number> xa = vectorDist.getPos(a);
+	Point<3,particle_real_number> xa = vectorDist.getPos(a);
 
 	// Type of the particle
 	unsigned int typea = vectorDist.template getProp<TYPE>(a);
 
 	// Get the density of the of the particle a
-	real_number rhoa = vectorDist.template getProp<RHO>(a);
+	particle_real_number rhoa = vectorDist.template getProp<RHO>(a);
 
 	// Get the pressure of the particle a
-	real_number Pa = vectorDist.template getProp<PRESSURE>(a);
+	particle_real_number Pa = vectorDist.template getProp<PRESSURE>(a);
 
 	// Get the Velocity of the particle a
-	Point<3,real_number> va = vectorDist.template getProp<VELOCITY>(a);
+	Point<3,particle_real_number> va = vectorDist.template getProp<VELOCITY>(a);
 
 	// Reset the force counter (- gravity on zeta direction)
-	Point<3,real_number> force_;
+	Point<3,particle_real_number> force_;
 	force_.get(0) = 0.0f;
 	force_.get(1) = 0.0f;
 	force_.get(2) = -gravity;
-	real_number drho_ = 0.0f;
+	particle_real_number drho_ = 0.0f;
 
 	// Get an iterator over the neighborhood particles of p
 	auto Np = cellList.getNNIteratorBox(cellList.getCell(xa));
@@ -486,33 +492,33 @@ __global__ void calc_forces_gpu(particles_type vectorDist, CellList_type cellLis
 		auto b = Np.get();
 
 		// Get the position xp of the particle
-		Point<3,real_number> xb = vectorDist.getPos(b);
+		Point<3,particle_real_number> xb = vectorDist.getPos(b);
 
 		if (a == b)	{++Np; continue;};
 
 		unsigned int typeb = vectorDist.template getProp<TYPE>(b);
 
-		real_number massb = (typeb == FLUID)?MassFluid:MassBound;
-		Point<3,real_number> vb = vectorDist.template getProp<VELOCITY>(b);
-		real_number Pb = vectorDist.template getProp<PRESSURE>(b);
-		real_number rhob = vectorDist.template getProp<RHO>(b);
+		particle_real_number massb = (typeb == FLUID)?MassFluid:MassBound;
+		Point<3,particle_real_number> vb = vectorDist.template getProp<VELOCITY>(b);
+		particle_real_number Pb = vectorDist.template getProp<PRESSURE>(b);
+		particle_real_number rhob = vectorDist.template getProp<RHO>(b);
 
 		// Get the distance between p and q
-		Point<3,real_number> dr = xa - xb;
+		Point<3,particle_real_number> dr = xa - xb;
 		// take the norm of this vector
-		real_number r2 = norm2(dr);
+		particle_real_number r2 = norm2(dr);
 
 		// if they interact
 		if (r2 < 4.0*H*H && r2 >= 1e-16)
 		{
-			real_number r = sqrt(r2);
+			particle_real_number r = sqrt(r2);
 
-			Point<3,real_number> v_rel = va - vb;
+			Point<3,particle_real_number> v_rel = va - vb;
 
-			Point<3,real_number> DW;
+			Point<3,particle_real_number> DW;
 			DWab(dr,DW,r);
 
-			real_number factor = - massb*((Pa + Pb) / (rhoa * rhob) + Tensile(r,rhoa,rhob,Pa,Pb,W_dap) + Pi(dr,r2,v_rel,rhoa,rhob,massb,cbar,max_visc));
+			particle_real_number factor = - massb*((Pa + Pb) / (rhoa * rhob) + Tensile(r,rhoa,rhob,Pa,Pb,W_dap) + Pi(dr,r2,v_rel,rhoa,rhob,massb,cbar,max_visc));
 
 			// Bound - Bound does not produce any change
 			// factor = (typea == BOUNDARY && typeb == BOUNDARY)?0.0f:factor;
@@ -522,7 +528,7 @@ __global__ void calc_forces_gpu(particles_type vectorDist, CellList_type cellLis
 			force_.get(1) += factor * DW.get(1);
 			force_.get(2) += factor * DW.get(2);
 
-			real_number scal = massb*(v_rel.get(0)*DW.get(0)+v_rel.get(1)*DW.get(1)+v_rel.get(2)*DW.get(2));
+			particle_real_number scal = massb*(v_rel.get(0)*DW.get(0)+v_rel.get(1)*DW.get(1)+v_rel.get(2)*DW.get(2));
 			scal = (typea == BOUNDARY && typeb == BOUNDARY)?0.0f:scal;
 
 			drho_ += scal;
@@ -539,7 +545,7 @@ __global__ void calc_forces_gpu(particles_type vectorDist, CellList_type cellLis
 	vectorDist.template getProp<DRHO>(a) = drho_;
 }
 
-template<typename CellList> inline void calc_forces(particles & vectorDist, CellList & cellList, real_number & max_visc, size_t cnt)
+template<typename CellList> inline void calc_forces(particles & vectorDist, CellList & cellList, particle_real_number & max_visc, size_t cnt)
 {
 	auto part = vectorDist.getDomainIteratorGPU(32);
 
@@ -556,10 +562,10 @@ __global__ void max_acceleration_and_velocity_gpu(vector_type vectorDist)
 {
 	auto a = GET_PARTICLE(vectorDist);
 
-	Point<3,real_number> acc(vectorDist.template getProp<FORCE>(a));
+	Point<3,particle_real_number> acc(vectorDist.template getProp<FORCE>(a));
 	vectorDist.template getProp<RED>(a) = norm(acc);
 
-	Point<3,real_number> vel(vectorDist.template getProp<VELOCITY>(a));
+	Point<3,particle_real_number> vel(vectorDist.template getProp<VELOCITY>(a));
 	vectorDist.template getProp<RED2>(a) = norm(vel);
 }
 
@@ -572,7 +578,7 @@ __global__ void checkGPU(vector_type vector)
 
 
 
-void max_acceleration_and_velocity(particles & vectorDist, real_number & max_acc, real_number & max_vel)
+void max_acceleration_and_velocity(particles & vectorDist, particle_real_number & max_acc, particle_real_number & max_vel)
 {
 	// Calculate the maximum acceleration
 	auto part = vectorDist.getDomainIteratorGPU();
@@ -589,22 +595,22 @@ void max_acceleration_and_velocity(particles & vectorDist, real_number & max_acc
 }
 
 
-real_number calc_deltaT(particles & vectorDist, real_number ViscDtMax)
+particle_real_number calc_deltaT(particles & vectorDist, particle_real_number ViscDtMax)
 {
-	real_number Maxacc = 0.0;
-	real_number Maxvel = 0.0;
+	particle_real_number Maxacc = 0.0;
+	particle_real_number Maxvel = 0.0;
 	max_acceleration_and_velocity(vectorDist,Maxacc,Maxvel);
 
 	//-dt1 depends on force per unit mass.
-	const real_number dt_f = (Maxacc)?sqrt(H/Maxacc):std::numeric_limits<float>::max();
+	const particle_real_number dt_f = (Maxacc)?sqrt(H/Maxacc):std::numeric_limits<float>::max();
 
 	//-dt2 combines the Courant and the viscous time-step controls.
-	const real_number dt_cv = H/(std::max(cbar,Maxvel*10.f) + H*ViscDtMax);
+	const particle_real_number dt_cv = H/(std::max(cbar,Maxvel*10.f) + H*ViscDtMax);
 
 	//-dt new value of time step.
-	real_number dt=real_number(CFLnumber)*std::min(dt_f,dt_cv);
-	if(dt<real_number(DtMin))
-	{dt=real_number(DtMin);}
+	particle_real_number dt=particle_real_number(CFLnumber)*std::min(dt_f,dt_cv);
+	if(dt<particle_real_number(DtMin))
+	{dt=particle_real_number(DtMin);}
 
 	return dt;
 }
@@ -618,7 +624,7 @@ __global__ void checkPosPrpLimits_ker(vector_dist_type vectorDist)
 	// if the particle type is boundary
 	if (vectorDist.template getProp<TYPE>(p) == BOUNDARY)
 	{
-		real_number rho = vectorDist.template getProp<RHO>(p);
+		particle_real_number rho = vectorDist.template getProp<RHO>(p);
 		if (rho < RhoZero)
 			vectorDist.template getProp<RHO>(p) = RhoZero;
 
@@ -654,12 +660,12 @@ void checkPosPrpLimits(particles & vectorDist)
 
 
 template<typename vector_type, typename CellList_type>
-__global__ void sensor_pressure_gpu(vector_type vectorDist, CellList_type cellList, Point<3,real_number> probe, real_number * press_tmp)
+__global__ void sensor_pressure_gpu(vector_type vectorDist, CellList_type cellList, Point<3,particle_real_number> probe, particle_real_number * press_tmp)
 {
-	real_number tot_ker = 0.0;
+	particle_real_number tot_ker = 0.0;
 
 	// Get the position of the probe i
-	Point<3,real_number> xp = probe;
+	Point<3,particle_real_number> xp = probe;
 
 	// get the iterator over the neighbohood particles of the probes position
 	auto itg = cellList.getNNIteratorBox(cellList.getCell(xp));
@@ -675,13 +681,13 @@ __global__ void sensor_pressure_gpu(vector_type vectorDist, CellList_type cellLi
 		}
 
 		// Get the position of the neighborhood particle q
-		Point<3,real_number> xq = vectorDist.getPos(q);
+		Point<3,particle_real_number> xq = vectorDist.getPos(q);
 
 		// Calculate the contribution of the particle to the pressure
 		// of the probe
-		real_number r = sqrt(norm2(xp - xq));
+		particle_real_number r = sqrt(norm2(xp - xq));
 
-		real_number ker = Wab(r) * (MassFluid / RhoZero);
+		particle_real_number ker = Wab(r) * (MassFluid / RhoZero);
 
 		// Also keep track of the calculation of the summed
 		// kernel
@@ -705,8 +711,8 @@ __global__ void sensor_pressure_gpu(vector_type vectorDist, CellList_type cellLi
 template<typename Vector, typename CellList>
 inline void sensor_pressure(Vector & vectorDist,
 	CellList & cellList,
-	openfpm::vector<openfpm::vector<real_number>> & press_t,
-	openfpm::vector<Point<3,real_number>> & probes)
+	openfpm::vector<openfpm::vector<particle_real_number>> & press_t,
+	openfpm::vector<Point<3,particle_real_number>> & probes)
 {
 	Vcluster<> & v_cl = create_vcluster();
 
@@ -715,20 +721,20 @@ inline void sensor_pressure(Vector & vectorDist,
 	for (size_t i = 0 ; i < probes.size() ; i++)
 	{
 		// A float variable to calculate the pressure of the problem
-		CudaMemory press_tmp_(sizeof(real_number));
-		real_number press_tmp;
+		CudaMemory press_tmp_(sizeof(particle_real_number));
+		particle_real_number press_tmp;
 
 		// if the probe is inside the processor domain
 		if (vectorDist.getDecomposition().isLocal(probes.get(i)) == true)
 		{
 			vectorDist.updateCellListGPU(cellList);
 
-			Point<3,real_number> probe = probes.get(i);
-			CUDA_LAUNCH_DIM3(sensor_pressure_gpu,1,1,vectorDist.toKernel(),cellList.toKernel(),probe,(real_number *)press_tmp_.toKernel());
+			Point<3,particle_real_number> probe = probes.get(i);
+			CUDA_LAUNCH_DIM3(sensor_pressure_gpu,1,1,vectorDist.toKernel(),cellList.toKernel(),probe,(particle_real_number *)press_tmp_.toKernel());
 
 			// move calculated pressure on
 			press_tmp_.deviceToHost();
-			press_tmp = *(real_number *)press_tmp_.getPointer();
+			press_tmp = *(particle_real_number *)press_tmp_.getPointer();
 		}
 
 		// This is not necessary in principle, but if you
@@ -748,14 +754,14 @@ int main(int argc, char* argv[])
 	openfpm_init(&argc,&argv);
 
 	// It contain for each time-step the value detected by the probes
-	openfpm::vector<openfpm::vector<real_number>> press_t;
-	openfpm::vector<Point<3,real_number>> probes;
+	openfpm::vector<openfpm::vector<particle_real_number>> press_t;
+	openfpm::vector<Point<3,particle_real_number>> probes;
 
 	probes.add({0.8779f,0.3f,0.02f});
 	probes.add({0.754f,0.31f,0.02f});
 
 	// Here we define our domain a 2D box with internals from 0 to 1.0 for x and y
-	Box<3,real_number> domain({-0.05f,-0.05f,-0.05f},{1.7010f,0.7065f,0.511f});
+	Box<3,particle_real_number> domain({-0.05f,-0.05f,-0.05f},{1.7010f,0.7065f,0.511f});
 	size_t sz[3] = {207,90,66};
 
 	// Fill W_dap
@@ -765,7 +771,7 @@ int main(int argc, char* argv[])
 	size_t bc[3]={NON_PERIODIC,NON_PERIODIC,NON_PERIODIC};
 
 	// extended boundary around the domain, and the processor domain
-	Ghost<3,real_number> g(2*H);
+	Ghost<3,particle_real_number> g(2*H);
 
 	particles vectorDist(0,domain,bc,g,DEC_GRAN(512));
 
@@ -773,7 +779,7 @@ int main(int argc, char* argv[])
 
 	// You can ignore all these dp/2.0 is a trick to reach the same initialization
 	// of Dual-SPH that use a different criteria to draw particles
-	Box<3,real_number> fluid_box({dp/2.0f,dp/2.0f,dp/2.0f},{0.4f+dp/2.0f,0.67f-dp/2.0f,0.3f+dp/2.0f});
+	Box<3,particle_real_number> fluid_box({dp/2.0f,dp/2.0f,dp/2.0f},{0.4f+dp/2.0f,0.67f-dp/2.0f,0.3f+dp/2.0f});
 
 	// return an iterator to the fluid particles to add to vectorDist
 	auto fluid_it = DrawParticles::DrawBox(vectorDist,sz,domain,fluid_box);
@@ -822,14 +828,14 @@ int main(int argc, char* argv[])
 	}
 
 	// Recipient
-	Box<3,real_number> recipient1({0.0f,0.0f,0.0f},{1.6f+dp/2.0f,0.67f+dp/2.0f,0.4f+dp/2.0f});
-	Box<3,real_number> recipient2({dp,dp,dp},{1.6f-dp/2.0f,0.67f-dp/2.0f,0.4f+dp/2.0f});
+	Box<3,particle_real_number> recipient1({0.0f,0.0f,0.0f},{1.6f+dp/2.0f,0.67f+dp/2.0f,0.4f+dp/2.0f});
+	Box<3,particle_real_number> recipient2({dp,dp,dp},{1.6f-dp/2.0f,0.67f-dp/2.0f,0.4f+dp/2.0f});
 
-	Box<3,real_number> obstacle1({0.9f,0.24f-dp/2.0f,0.0f},{1.02f+dp/2.0f,0.36f,0.45f+dp/2.0f});
-	Box<3,real_number> obstacle2({0.9f+dp,0.24f+dp/2.0f,0.0f},{1.02f-dp/2.0f,0.36f-dp,0.45f-dp/2.0f});
-	Box<3,real_number> obstacle3({0.9f+dp,0.24f,0.0f},{1.02f,0.36f,0.45f});
+	Box<3,particle_real_number> obstacle1({0.9f,0.24f-dp/2.0f,0.0f},{1.02f+dp/2.0f,0.36f,0.45f+dp/2.0f});
+	Box<3,particle_real_number> obstacle2({0.9f+dp,0.24f+dp/2.0f,0.0f},{1.02f-dp/2.0f,0.36f-dp,0.45f-dp/2.0f});
+	Box<3,particle_real_number> obstacle3({0.9f+dp,0.24f,0.0f},{1.02f,0.36f,0.45f});
 
-	openfpm::vector<Box<3,real_number>> holes;
+	openfpm::vector<Box<3,particle_real_number>> holes;
 	holes.add(recipient2);
 	holes.add(obstacle1);
 	auto bound_box = DrawParticles::DrawSkin(vectorDist,sz,domain,holes,recipient1);
@@ -901,7 +907,7 @@ int main(int argc, char* argv[])
 	auto cellList = vectorDist.getCellListGPU(2*H, CL_NON_SYMMETRIC, 2);
 
 	// Odeint time stepper with GPU backend
-	boost::numeric::odeint::euler<sph_state_type_ofp_gpu, double, sph_state_type_ofp_gpu, double, boost::numeric::odeint::vector_space_algebra_ofp_gpu,boost::numeric::odeint::ofp_operations> eulerOdeint;
+	boost::numeric::odeint::euler<sph_state_type_ofp_gpu, real_number, sph_state_type_ofp_gpu, real_number, boost::numeric::odeint::vector_space_algebra_ofp_gpu,boost::numeric::odeint::ofp_operations> eulerOdeint;
 
 	// RHS functor for odeint
 	RHSFunctor<decltype(vectorDist), decltype(cellList)> rhsFunctor(vectorDist, cellList);
@@ -936,7 +942,7 @@ int main(int argc, char* argv[])
 	size_t write = 0;
 	size_t it = 0;
 	size_t it_reb = 0;
-	real_number t = 0.0;
+	particle_real_number t = 0.0;
 	while (t <= t_end)
 	{
 		Vcluster<> & v_cl = create_vcluster();
@@ -967,7 +973,7 @@ int main(int argc, char* argv[])
 		// Calculate pressure from the density
 		EqState(vectorDist);
 
-		real_number max_visc = 0.0;
+		particle_real_number max_visc = 0.0;
 
 		vectorDist.ghost_get<TYPE,RHO,PRESSURE,VELOCITY>(RUN_ON_DEVICE);
 

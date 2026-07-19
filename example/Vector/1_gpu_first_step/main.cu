@@ -176,13 +176,13 @@ int main(int argc, char* argv[])
 	openfpm_init(&argc,&argv);
 
 	// Here we define our domain a 2D box with internals from 0 to 1.0 for x and y
-	Box<2,float> domain({0.0,0.0},{1.0,1.0});
+	Box<2,float> domain({0.0f,0.0f},{1.0f,1.0f});
 
 	// Here we define the boundary conditions of our problem
     size_t bc[2]={PERIODIC,PERIODIC};
 
 	// extended boundary around the domain, and the processor domain
-	Ghost<2,float> g(0.05);
+	Ghost<2,float> g(0.05f);
 
     vector_dist_gpu<2,float, aggregate<float,float[2],float[2][2]> > vd(100,domain,bc,g);
 
